@@ -312,7 +312,7 @@ export function createHud(app) {
         (cede.rect
           ? (cede.count ? cede.count + ' tile' + (cede.count === 1 ? '' : 's') + ' of yours will change hands. ' : 'No land of yours inside this area. ')
           : 'Drag a rectangle across your own land; a plain click marks a single tile. ') +
-        'Confirm with Enter or the button. Free and peaceful: nothing is destroyed - cities, farms, factories, fortresses (even unfinished ones) and roads on the land change hands intact, and the divisions stay under your command. Right-click / Esc cancels.'
+        'Confirm with Enter or the button. Cities, farms, factories, fortresses (even unfinished ones) and roads change hands intact, and divisions remain yours. <b class="warn">Giving away all your remaining land eliminates your faction and removes its divisions.</b> Right-click / Esc cancels.'
       : ui.road
       ? '<b>Road tool</b> — click a start tile, Shift+click bends, click the end tile or press Enter to build. ' +
         (ui.road.pts.length ? ui.road.pts.length + ' point' + (ui.road.pts.length > 1 ? 's' : '') +

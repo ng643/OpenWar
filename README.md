@@ -151,8 +151,9 @@ Single player uses the very same command path locally.
   **Cede N tiles**. The preview counts only land you own; a click selects one tile. One command transfers
   the whole swath, ignoring neutral and other players' tiles. Right-click, Escape or losing focus cancels.
   Cession is free and peaceful: cities, buildings (including fortresses and unfinished deadlines) and roads
-  change hands intact, while your divisions stay yours. Bots make small, conservative teammate-city border
-  transfers, protecting their own cities, buildings and nearby troops.
+  change hands intact, while your divisions stay yours. Giving away **all** remaining territory eliminates
+  your faction and removes its divisions. Bots make small, conservative teammate-city border transfers,
+  protecting their own cities, buildings and nearby troops.
 
 ## AI training
 
