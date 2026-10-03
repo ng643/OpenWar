@@ -1,0 +1,76 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate multiplayer endpoint
+        env:
+          MULTIPLAYER_SERVER_URL: ${{ vars.MULTIPLAYER_SERVER_URL }}
+        run: |
+          if [ -z "$MULTIPLAYER_SERVER_URL" ]; then
+            echo "::error::Repository variable MULTIPLAYER_SERVER_URL is not set. Set it to the public secure WebSocket endpoint (wss://host/path) under Settings > Secrets and variables > Actions > Variables before deploying."
+            exit 1
+          fi
+          node -e '
+            const raw = process.env.MULTIPLAYER_SERVER_URL;
+            let u;
+            try { u = new URL(raw); } catch {
+              console.error("::error::MULTIPLAYER_SERVER_URL must be a valid absolute URL, got: " + raw);
+              process.exit(1);
+            }
+            if (u.protocol !== "wss:") {
+              console.error("::error::MULTIPLAYER_SERVER_URL must use the secure wss:// scheme, got: " + raw);
+              process.exit(1);
+            }
+          '
+
+      - name: Build
+        env:
+          VITE_SERVER_URL: ${{ vars.MULTIPLAYER_SERVER_URL }}
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

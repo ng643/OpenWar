@@ -1,0 +1,13 @@
+[Unit]
+Description=Renew OpenWar Let's Encrypt certificates (IP cert, shortlived profile)
+After=network-online.target nginx.service
+Wants=network-online.target
+ConditionPathExists=/etc/letsencrypt/renewal/130.162.162.132.conf
+
+[Service]
+Type=oneshot
+# webroot + --ip-address + shortlived profile are stored in the renewal config;
+# the deploy hook reloads nginx so the new certificate is picked up immediately.
+ExecStart=/opt/certbot/bin/certbot renew --quiet --no-random-sleep-on-renew --deploy-hook "systemctl reload nginx"
+Nice=10
+IOSchedulingClass=idle

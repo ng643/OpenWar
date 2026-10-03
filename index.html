@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Frontline — division command</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body class="menu">
+  <canvas id="c"></canvas>
+
+  <div id="top" class="panel">
+    <div class="stat" title="Soldiers for new divisions and reinforcements. Grows with land, cities and farms."><small>Manpower</small><b id="hPool">0</b> <em id="hInc">0</em></div>
+    <div class="stat" title="Equipment and buildings. Grows with cities, factories and land."><small>Gold</small><b id="hGold">0</b> <em id="hGoldInc">0</em></div>
+    <div class="stat"><small>In field</small><b id="hArmy">0</b></div>
+    <div class="stat"><small>Divisions</small><b id="hDivs">0</b></div>
+    <div class="stat"><small>Land</small><b id="hLand">0%</b></div>
+    <div class="sp"><small>Speed</small>
+      <button id="bPause" title="Space">⏸</button><button data-sp="1">1×</button><button data-sp="2">2×</button><button data-sp="4">4×</button>
+    </div>
+    <div class="ovl"><small>Logistics</small><button id="bLogi" title="Supply overlay (O): draw each division's real supply path and its current damage output">O</button></div>
+  </div>
+
+  <div id="logiLegend" class="panel" style="display:none">
+    <b>Logistics</b>
+    <div class="grad"></div>
+    <div class="lg"><span>Cut off</span><span>Fully supplied</span></div>
+    <div class="txt">Each line is a division's real supply chain to the city feeding it, coloured by how hard it can currently fight
+      (50–100% damage output). <b class="cut">✕ 50%</b> marks a division that is cut off and gets no supply line at all.</div>
+  </div>
+
+  <div id="spec" class="panel">Spectating — the whole map is visible, and the camera is yours to move.</div>
+
+  <div id="board" class="panel"></div>
+  <canvas id="mini" width="210" height="134"></canvas>
+  <div id="toasts"></div>
+
+  <div id="sel" class="panel">
+    <div class="info" id="selInfo">Nothing selected</div>
+    <div class="row">
+      <button id="bRaise" title="Infantry: balanced">Infantry <kbd>R</kbd></button>
+      <button id="bRaiseA" title="Armor: fast, hard-hitting">Armor <kbd>T</kbd></button>
+      <button id="bRaiseR" title="Artillery: ranged support, cannot capture land">Artillery <kbd>Y</kbd></button>
+    </div>
+    <div class="row build">
+      <button id="bFarm">Farm <kbd>J</kbd></button>
+      <button id="bFactory">Factory <kbd>K</kbd></button>
+      <button id="bFort">Fortress <kbd>L</kbd></button>
+      <button id="bRoad">Road <kbd>B</kbd></button>
+    </div>
+    <div class="row">
+      <button id="bStop" title="H">Halt <kbd>H</kbd></button>
+      <button id="bSplit" title="X">Split <kbd>X</kbd></button>
+      <button id="bMerge" title="M">Merge <kbd>M</kbd></button>
+      <button id="bColumn" title="C">Column <kbd>C</kbd></button>
+      <button id="bCede" title="G">Cede <kbd>G</kbd></button>
+    </div>
+    <div id="cede" style="display:none">
+      <div class="clabel">Cede to</div>
+      <div id="cedeTargets"></div>
+      <div class="row">
+        <button id="bCedeGo">Cede area <kbd>Enter</kbd></button>
+        <button id="bCedeX">Cancel <kbd>Esc</kbd></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="help" class="panel">
+    <h4>Controls <kbd>/</kbd></h4>
+    <div class="mods" id="hMods"></div>
+    <table>
+      <tr><td><b>Left click / drag</b></td><td>Select division(s) or a city (Shift: add / remove from the selection). Double-click: all on screen</td></tr>
+      <tr><td><b>Right click</b></td><td>Move / attack-move. Units stop to fight enemies they meet, then continue to the ordered point. On a selected city: set rally point</td></tr>
+      <tr><td><b>Right-drag</b></td><td>Draw a straight line to spread the selected divisions evenly along it, then release to send them. They still stop to fight enemies on the way and then continue. A quick right-click still moves them normally</td></tr>
+      <tr><td><b>Ctrl + right-drag</b></td><td>Freehand curve: draw any path to spread the selected divisions along it, then release to send them, with the same stop-to-fight rule. A Ctrl quick click still moves them normally</td></tr>
+      <tr><td><b>R / T / Y</b></td><td>Raise Infantry / Armor / Artillery at the selected city (or capital). Costs manpower and gold; Armor and Artillery need a Factory nearby</td></tr>
+      <tr><td><b>J / K / L</b></td><td>Build Farm / Factory / Fortress. Click (farms: drag) to place, right-click or Esc to stop</td></tr>
+      <tr><td><b>B</b></td><td>Road tool: click a start tile, Shift+click corners, then click the end tile (or press Enter) to build. Right-click / Esc cancels</td></tr>
+      <tr><td><b>G</b></td><td>Cede land: pick a living teammate, drag a rectangle (a click marks one tile) over your own land, then press Enter to hand it over. Free and peaceful - nothing is destroyed: cities, farms, factories, fortresses (even unfinished ones) and roads on the land change hands intact, and the divisions stay under your command. Right-click / Esc cancels</td></tr>
+      <tr><td><b>Shift + right click</b></td><td>Add a route checkpoint (bend) that the selected divisions visit in order; a plain right click replaces their route. Shift + right-drag still draws a formation</td></tr>
+      <tr><td><b>C</b></td><td>Toggle Column mode: right-click orders the selection to travel single file along the route, in a fixed order</td></tr>
+      <tr><td><b>H / X / M</b></td><td>Halt / Split in half / Merge nearby selected of same type</td></tr>
+      <tr><td><b>V</b></td><td>Toggle fog of war</td></tr>
+      <tr><td><b>O</b></td><td>Toggle logistics overlay: draw each division's real supply path and its current damage output (red-green); spectators see every faction</td></tr>
+      <tr><td><b>Ctrl+1-9, 1-9</b></td><td>Set / recall control group</td></tr>
+      <tr><td><b>Ctrl+A, F, Esc</b></td><td>Select all / focus camera / deselect</td></tr>
+      <tr><td><b>WASD, arrows, wheel, middle-drag</b></td><td>Pan / zoom</td></tr>
+      <tr><td><b>Minimap</b></td><td>Click/drag to pan, right-click to send selected divisions</td></tr>
+    </table>
+    <div class="blurb">
+      Divisions seize land around them while standing or moving. Capturing enemy land costs men. Hold <span id="hWinPct">60%</span> of the land to win.<br><br>
+      Divisions never overlap and cannot be walked through. A division whose way is blocked by an enemy stops and fights until the fight ends, then carries on toward the point you ordered - for both move and formation orders, with or without Shift held.<br><br>
+      <b>Logistics &amp; healing:</b> a division draws supply along your own land to your nearest connected city. The effective distance D is measured over terrain (diagonals cost more), and a road tile costs only its terrain × <span id="hRoadLogi">25%</span> for logistics. Its damage output is 50% + 50%/(1 + D/<span id="hLogDist">20</span>), and it reinforces from your manpower reserves at up to <span id="hReinforce">3</span> men/s, falling with D the same way - in place, only while unengaged, so no division ever has to walk home to heal. Cut off from every city it fights at <span id="hIsoOut">50%</span> output and gets no reinforcements; isolation by itself never bleeds men.<br><br>
+      <b>Roads:</b> the Road tool (B) paves your own land for <span id="hRoadGold">2</span> gold per new tile, instantly, and never charges twice for the same tile. Roads make normal movement ×<span id="hRoadSpeed">1.5</span> faster for whoever stands on them, cut logistics cost to ×<span id="hRoadLogi">25%</span>, and survive capture along with the land.<br><br>
+      <b>Routing &amp; cornered:</b> a division wounded below <span id="hRoutPct">40%</span> strength in combat routs - it flees away from the fighting toward a temporary, seeded destination <span id="hRoutRange">6-12</span> tiles off, never to a city. Uninterrupted, it recovers to <span id="hRecoverPct">70%</span> strength and resumes the route it had saved. If enemies intercept the rout or it is dragged back into a fight, it becomes <span class="warn">Cornered</span>: it can never flee again and fights to the death. Halt cancels queued orders and routes, but never a mandatory rout or cornered fight.<br><br>
+      <b>Push:</b> a melee attacker that has an order shoves its defender at max(0, attacker top speed − defender top speed + <span id="hPush">0.25</span>) tiles/s; terrain and other bodies can stop the push. Displaced friendly holders step aside and return to exactly where they stood once the passage clears.<br><br>
+      <b>Columns &amp; routes:</b> Shift+right-click adds route checkpoints the selected divisions visit in order; a plain right-click replaces the route with a single move. <b>Column mode</b> (C) makes a right-click order travel single file, at least <span id="hCol">1.2</span> tiles apart, in a fixed leader order that followers never overtake.<br><br>
+      <b>Economy:</b> <i>Manpower</i> (from land, cities and farms) fills divisions; <i>Gold</i> (from cities, factories and land) pays for equipment and buildings. Farms can go on any of your plain land. Factories and Fortresses must stand within 5 tiles of one of your cities (select a city to see the circle). A Factory unlocks Armor and Artillery and earns gold; a Fortress makes your divisions within <span id="hFortRange">3</span> tiles take <span id="hFortRed">40%</span> less damage. When an enemy captures a tile: a Fortress is destroyed, while a Farm or Factory changes hands intact - an unfinished building keeps its build deadline for the new owner.<br><br>
+      <b>Types:</b> Infantry is balanced. Armor is fast and hits hard but costs a lot. Artillery shells enemies up to 5 tiles away but cannot capture land and is weak in melee, so escort it. Divisions far from your cities simply fight and reinforce worse (see Logistics), never losing men to distance alone. You only see enemy divisions near your divisions and cities.
+    </div>
+  </div>
+
+  <div id="conn"></div>
+
+  <div id="end"><h1 id="endTitle"></h1><div id="endSub"></div>
+    <div class="row"><button id="bAgain">New game</button><button id="bMenu">Main menu</button></div>
+  </div>
+
+  <div id="menu">
+    <div class="card">
+      <h1>Frontline</h1>
+      <div class="tag">Command divisions. Hold the land.</div>
+      <div id="mNameRow">
+        <label>Your name <input id="mName" maxlength="16" placeholder="Commander" autocomplete="off"></label>
+      </div>
+      <div id="mMain">
+        <button id="mSingle" class="big">Single player</button>
+        <div class="or">or play online with friends</div>
+        <label>Room code <input id="mRoom" maxlength="12" placeholder="leave blank for a new room" autocomplete="off"></label>
+        <button id="mOnline" class="big">Join / create room</button>
+        <button id="mWatch">Watch as a spectator</button>
+      </div>
+      <div id="mSetup" style="display:none">
+        <div id="sOpts"></div>
+        <div class="row"><button id="mPlay" class="big">Start game</button><button id="mBack">Back</button></div>
+      </div>
+      <div id="mLobby" style="display:none">
+        <div class="code">Room <b id="lCode"></b> <button id="lCopy">Copy invite link</button></div>
+        <div id="lOpts"></div>
+        <ul id="lList"></ul>
+        <div class="hint" id="lHint"></div>
+        <div class="row"><button id="lStart" class="big">Start game</button><button id="lLeave">Leave</button></div>
+      </div>
+      <div id="mErr"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0b1622; color: #dfe8f1; font: 13px/1.35 system-ui, "Segoe UI", sans-serif; user-select: none; }
+canvas { display: block; position: absolute; inset: 0; }
+
+.panel { position: absolute; background: rgba(10, 20, 32, .86); border: 1px solid #28425f; border-radius: 8px; padding: 8px 10px; backdrop-filter: blur(3px); }
+
+#top { top: 8px; left: 8px; display: flex; gap: 16px; align-items: center; }
+#top b { font-size: 15px; color: #fff; }
+#top small { display: block; color: #8aa4be; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+
+#top em { font-style: normal; color: #8aa4be; font-size: 11px; margin-left: 2px; }
+
+/* logistics overlay: button row + legend */
+#logiLegend { top: 76px; left: 8px; width: 302px; max-width: calc(100vw - 16px); font-size: 12px; pointer-events: none; }
+#logiLegend b { color: #fff; }
+#logiLegend .grad { height: 10px; border-radius: 5px; margin: 6px 0 3px; border: 1px solid #28425f; background: linear-gradient(90deg, hsl(0,72%,52%), hsl(60,72%,52%), hsl(120,72%,52%)); }
+#logiLegend .lg { display: flex; justify-content: space-between; color: #8aa4be; font-size: 11px; }
+#logiLegend .txt { margin-top: 6px; color: #b9cbdd; }
+#logiLegend .cut { color: #ff4a3d; }
+/* Narrow screens: the scoreboard (#board) is 210px wide at the top right, so keep the legend to its left and
+   float the new Logistics group to the start of #top so its O button is never hidden under that scoreboard. */
+@media (max-width: 700px) { #logiLegend { max-width: max(170px, calc(100vw - 250px)); } .ovl { order: -1; } }
+button small { color: #9fb6cc; font-size: 11px; }
+button.on { background: #6b5a14; border-color: #ffe14d; }
+#sel .row.build { padding-top: 5px; border-top: 1px solid #28425f; }
+
+/* Cede panel (G): recipient picker + confirm/cancel, shown only while the cede tool is open. */
+#sel #cede { margin-top: 5px; padding-top: 6px; border-top: 1px solid #28425f; }
+#cede .clabel { color: #8aa4be; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+#cedeTargets { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
+#cedeTargets button { padding: 3px 8px; }
+
+#board { top: 8px; right: 8px; min-width: 210px; max-height: min(46vh, 340px); overflow-y: auto; }
+#board div { display: flex; align-items: center; gap: 6px; padding: 1px 0; }
+#board i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+#board span.n { flex: 1; }
+#board .dead { opacity: .35; text-decoration: line-through; }
+#board .army { color: #8aa4be; width: 34px; text-align: right; }
+/* Team game: one header per team, showing the land the team holds together. */
+#board .trow { position: sticky; top: 0; background: rgba(10, 20, 32, .96); margin-top: 3px; padding: 3px 0 1px;
+  border-top: 1px solid #28425f; color: #8aa4be; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+#board .trow:first-child { margin-top: 0; border-top: 0; }
+#board .trow .tn { flex: 1; }
+#board .trow.mine { color: #ffe14d; }
+
+#mini { inset: auto; right: 8px; bottom: 8px; width: 210px; height: 134px; border: 1px solid #28425f; border-radius: 6px; background: #0a2038; cursor: crosshair; box-shadow: 0 0 0 1px #0008; }
+
+#sel { bottom: 8px; left: 8px; min-width: 330px; }
+#sel .info { min-height: 36px; margin-bottom: 6px; color: #b9cbdd; }
+#sel .info b { color: #fff; }
+.row { display: flex; gap: 5px; margin-bottom: 5px; flex-wrap: wrap; }
+.row:last-child { margin-bottom: 0; }
+.warn { color: #fca5a5; }
+.fight { color: #ff8f87; }
+.col { color: #7dd3fc; }
+
+button { background: #1e3550; color: #e8f1fa; border: 1px solid #3a5b80; border-radius: 5px; padding: 5px 9px; font: inherit; cursor: pointer; }
+button:hover { background: #2a4a6e; }
+button:disabled { opacity: .4; cursor: default; }
+kbd { background: #0b1622; border: 1px solid #3a5b80; border-radius: 3px; padding: 0 4px; font-size: 11px; color: #9fc3e6; }
+
+#help { bottom: 8px; right: 232px; max-width: 340px; max-height: calc(100vh - 240px); overflow-y: auto; font-size: 12px; }
+#help h4 { margin: 0 0 4px; color: #fff; }
+#help table { border-collapse: collapse; }
+#help td { padding: 1px 8px 1px 0; vertical-align: top; }
+#help .blurb { margin-top: 6px; color: #8aa4be; }
+
+#toasts { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; }
+.toast { background: rgba(10, 20, 32, .9); border: 1px solid #3a5b80; border-radius: 6px; padding: 4px 12px; animation: fade 4s forwards; }
+.toast.good { border-color: #3fb36b; color: #9ff0bd; }
+.toast.bad { border-color: #d9534f; color: #ffaaa6; }
+@keyframes fade { 0% { opacity: 0; transform: translateY(-6px); } 8% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
+
+#end { position: absolute; inset: 0; background: rgba(5, 10, 16, .7); display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+#end h1 { margin: 0; font-size: 44px; color: #fff; }
+#end button { font-size: 16px; padding: 8px 18px; }
+
+#conn { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); background: #7a2a1f; border: 1px solid #d9534f; border-radius: 6px; padding: 4px 14px; display: none; z-index: 30; }
+
+/* menu / lobby */
+body.menu #top, body.menu #board, body.menu #mini, body.menu #sel, body.menu #help, body.menu #logiLegend { display: none; }
+body.net .sp { display: none; }
+#menu { position: absolute; inset: 0; z-index: 20; background: radial-gradient(ellipse at center, #14304f 0%, #0b1622 75%); display: flex; align-items: center; justify-content: center; }
+#menu .card { width: 360px; background: rgba(10, 20, 32, .92); border: 1px solid #28425f; border-radius: 12px; padding: 24px 28px; display: flex; flex-direction: column; gap: 12px; }
+/* Setup and lobby carry the roster, so they get a wider card; the main menu stays narrow. */
+#menu .card.wide { width: min(600px, 96vw); }
+#menu h1 { margin: 0; font-size: 34px; color: #fff; letter-spacing: .04em; }
+#menu .tag { color: #8aa4be; margin-top: -8px; }
+#mMain, #mLobby { display: flex; flex-direction: column; gap: 10px; }
+#menu label { display: flex; flex-direction: column; gap: 3px; color: #8aa4be; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+#menu input { background: #0b1622; color: #fff; border: 1px solid #3a5b80; border-radius: 5px; padding: 7px 9px; font: 14px system-ui; user-select: text; text-transform: none; letter-spacing: normal; }
+#menu .big { font-size: 15px; padding: 9px 14px; }
+#mWatch { align-self: center; background: none; border: 0; color: #8fb4d9; padding: 2px 6px; font-size: 12px; text-decoration: underline; }
+#mWatch:hover:not(:disabled) { background: none; color: #fff; }
+#menu .or { text-align: center; color: #6c869f; margin: 4px 0; }
+#menu .code b { font-size: 22px; letter-spacing: .15em; color: #fff; margin: 0 8px; }
+#lList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; max-height: min(22vh, 168px); overflow-y: auto; }
+#lList li { background: #0f1f31; border-radius: 4px; padding: 5px 9px; }
+#lList li.off { opacity: .4; }
+#lList small { color: #8aa4be; }
+#lList .host { color: #ffe14d; }
+#lList .seat { float: right; color: #8aa4be; }
+#lList .me { border: 1px solid #28425f; }
+#menu .hint { color: #8aa4be; font-size: 12px; }
+#mErr { color: #ffaaa6; min-height: 16px; }
+
+/* setup panel */
+#mSetup { display: flex; flex-direction: column; gap: 10px; }
+#mSetup .row { margin-bottom: 0; }
+#sOpts, #lOpts { max-height: calc(92vh - 220px); overflow-y: auto; padding-right: 4px; }
+#menu .opts { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px 10px; }
+#menu .opts > label { justify-content: center; }
+#menu .winwrap { display: flex; align-items: center; gap: 8px; }
+#menu .winwrap input[type=range] { flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; background: transparent; accent-color: #3fb36b; }
+#menu .winwrap output { min-width: 38px; text-align: right; color: #dce8f4; font-size: 12px; }
+#menu select { background: #0b1622; color: #fff; border: 1px solid #3a5b80; border-radius: 5px; padding: 6px 8px; font: 13px system-ui; }
+#menu select:disabled, #menu input:disabled { opacity: .55; }
+#menu .chkwrap { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #cfe0f0; }
+#menu .muted { color: #6c869f; font-size: 11px; }
+/* Rules = map + modifiers side by side, roster underneath; each block is its own boxed fieldset. */
+#menu .setup-top { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+#menu fieldset.box { border: 1px solid #28425f; border-radius: 8px; padding: 8px 10px 10px; margin: 0; min-width: 0; }
+#menu fieldset.box legend { color: #8aa4be; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 0 4px; }
+#menu .seedwrap, #menu .btnwrap { display: flex; align-items: center; gap: 5px; min-width: 0; }
+#menu .seedwrap input { flex: 1; min-width: 0; }
+#menu .mini { padding: 3px 7px; font-size: 12px; line-height: 1.15; }
+#menu .box .opts { grid-template-columns: auto minmax(0, 1fr); }
+#menu fieldset.roster { margin-top: 10px; }
+/* Bulk controls above the roster: set the counts, then adjust single seats in the list below. */
+#menu .rctrl { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 10px; margin: 2px 0 6px; }
+#menu .rctrl label { color: #8aa4be; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+#menu .rctrl select { min-width: 58px; }
+/* Roster: one scrollable grid per seat, header row pinned so the columns stay readable. */
+#menu .rows { max-height: min(34vh, 236px); overflow-y: auto; overflow-x: hidden; margin: 4px 0; }
+#menu .rhead, #menu .rrow { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto minmax(0, 1fr) 76px; align-items: center; gap: 6px; }
+#menu .rhead { position: sticky; top: 0; z-index: 2; background: #0d1a29; padding: 2px 0; border-bottom: 1px solid #28425f;
+  color: #8aa4be; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+#menu .rrow { padding: 2px 0; border-top: 1px solid #16283c; }
+#menu .rrow:first-of-type { border-top: 0; }
+#menu .sw { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+#menu .rname { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #dce8f4; font-size: 12px; }
+#menu .rstates { display: flex; gap: 3px; }
+#menu .st { padding: 2px 6px; font-size: 11px; line-height: 1.2; background: #16283c; border-color: #28425f; }
+#menu .st.on { background: #2a4a6e; border-color: #8fb4d9; color: #fff; font-weight: 600; }
+#menu .rocc { color: #8aa4be; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#menu .rrow.bot .rname { color: #8fb4d9; font-style: italic; }
+#menu .rrow.off .rname, #menu .rrow.off .rocc { opacity: .45; }
+#menu .rteam { width: 76px; padding: 2px 4px; font-size: 12px; }
+#menu .rows:not(.teams) .rteam, #menu .rows:not(.teams) .thTeam { display: none; }
+@media (max-width: 560px) { #menu .setup-top { grid-template-columns: 1fr; } }
+#menu .card { max-height: 92vh; overflow-y: auto; }
+#mNameRow { display: block; }
+
+/* spectator banner + trimmed HUD */
+#spec { display: none; top: 8px; left: 0; right: 0; margin: 0 auto; width: fit-content; max-width: min(92vw, 560px); text-align: center; color: #ffe14d; }
+body.spectator:not(.menu) #spec { display: block; }
+body.spectator #sel { display: none; }
+body.spectator #top .stat { display: none; }
+.mods { color: #8aa4be; margin-top: 6px; }
+

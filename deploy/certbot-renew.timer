@@ -1,0 +1,15 @@
+[Unit]
+Description=Run certbot renew for the OpenWar IP certificate (6-day cert => 4x/day)
+Documentation=https://eff-certbot.readthedocs.io/en/stable/using.html
+
+[Timer]
+# Server timezone is UTC. Let's Encrypt IP certs last 6 days, so renew attempts run
+# four times a day; certbot only acts once a third of the lifetime has elapsed.
+OnCalendar=*-*-* 00,06,12,18:17:00
+RandomizedDelaySec=1800
+AccuracySec=1m
+Persistent=true
+Unit=certbot-renew.service
+
+[Install]
+WantedBy=timers.target

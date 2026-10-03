@@ -1,0 +1,52 @@
+[Unit]
+Description=OpenWar authoritative game server (loopback WebSocket backend)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=10
+# cleanly skipped until a release is activated (deploy.sh creates the symlink)
+ConditionPathExists=/opt/openwar/current/server/index.js
+
+[Service]
+Type=simple
+User=openwar
+Group=openwar
+WorkingDirectory=/opt/openwar/current
+Environment=NODE_ENV=production
+Environment=PORT=8080
+Environment=HOST=127.0.0.1
+# exact cross-origin allowlist for the GitHub Pages client (comma-separated origins).
+# createGameServer() reads this; the same-host check stays in place.
+Environment=ALLOWED_ORIGINS=https://ng643.github.io
+Environment=OPENWAR_APP_DIR=/opt/openwar/current
+Environment=STATIC_DIR=/opt/openwar/current/dist
+ExecStart=/usr/bin/node /opt/openwar/deploy/run-server.mjs
+Restart=always
+RestartSec=2
+TimeoutStopSec=15
+
+# --- least privilege -------------------------------------------------------
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+CapabilityBoundingSet=
+AmbientCapabilities=
+ReadWritePaths=/opt/openwar/shared
+UMask=0027
+LimitNOFILE=8192
+MemoryHigh=512M
+MemoryMax=768M
+
+[Install]
+WantedBy=multi-user.target

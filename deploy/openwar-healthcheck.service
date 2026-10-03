@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenWar health probe (public HTTPS entry point + loopback backend + WebSocket upgrade)
+After=network-online.target nginx.service openwar-backend.service
+# Only meaningful once a release is deployed; skipped (not failed) in the empty state.
+ConditionPathExists=/opt/openwar/current/server/index.js
+
+[Service]
+Type=oneshot
+ExecStart=/opt/openwar/deploy/healthcheck.sh
+User=openwar
+Group=openwar
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+UMask=0027

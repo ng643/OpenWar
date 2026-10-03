@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the OpenWar health probe every two minutes
+Documentation=https://systemd.io/
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=15s
+Unit=openwar-healthcheck.service
+
+[Install]
+WantedBy=timers.target

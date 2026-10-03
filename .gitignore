@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.scratch/
+*.log
+.env*
+*.ppk
+*.pem
+*.key
