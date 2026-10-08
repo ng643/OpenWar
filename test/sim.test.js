@@ -188,16 +188,19 @@ describe('divisions', () => {
     expect(p.gold).toBe(5);
   });
 
-  it('split conserves men and merge only joins same-type neighbours', () => {
+  it('split peels an atomic off a stack and merge only joins same-type neighbours', () => {
     const w = mkWorld(); const at = emptyLand(w);
-    const a = spawnDiv(w, 1, at.x, at.y, 100, 100, 'inf');
+    const a = spawnDiv(w, 1, at.x, at.y, 200, 200, 'inf');
     const halves = splitDivs(w, [a]);
-    expect(a.men + halves[0].men).toBe(100);
+    expect([halves[0].men, halves[0].cap]).toEqual([100, 100]);
+    expect(a.men + halves[0].men).toBe(200);
     const art = spawnDiv(w, 1, at.x + .5, at.y, 60, 60, 'art');
     const { absorbed } = mergeDivs([a, halves[0], art]);
     expect(absorbed).toEqual([halves[0]]);
-    expect(a.men).toBe(100);
+    expect(a.men).toBe(200);
     expect(art.men).toBe(60);
+    const single = spawnDiv(w, 1, at.x + 1, at.y, 100, 100, 'inf');
+    expect(splitDivs(w, [single])).toHaveLength(0);          // one atomic never divides
   });
 
   it('moves along a path, faster for armor than infantry', () => {
@@ -482,12 +485,12 @@ describe('solid bodies', () => {
     expect(new Set(five.map(d => tileOf(w, d))).size).toBe(5);     // each on its own tile
     for (let i = 0; i < five.length; i++) for (let j = i + 1; j < five.length; j++)
       expect(gap(five[i], five[j])).toBeGreaterThanOrEqual(MIN_SEP);
-    const parent = spawnDiv(w, 1, 40.5, 44.5, 100, 100, 'inf');
+    const parent = spawnDiv(w, 1, 40.5, 44.5, 200, 200, 'inf');
     const [half] = splitDivs(w, [parent]);
     expect(half).toBeTruthy();
     expect(tileOf(w, half)).not.toBe(tileOf(w, parent));
     expect(gap(half, parent)).toBeGreaterThanOrEqual(MIN_SEP);
-    expect(parent.men + half.men).toBe(100);
+    expect(parent.men + half.men).toBe(200);
   });
 
   it('recruits answering one rally point are given ground of their own', () => {
@@ -503,9 +506,9 @@ describe('solid bodies', () => {
     expect(p.pool).toBe(500 - 2 * TYPES.inf.manpower);
   });
 
-  it('a split half marches to its own ground instead of queueing on its parent', () => {
+  it('a peeled atomic marches to its own ground instead of queueing on its parent', () => {
     const w = sand();
-    const parent = spawnDiv(w, 1, 10.5, 10.5, 100, 100, 'inf');
+    const parent = spawnDiv(w, 1, 10.5, 10.5, 200, 200, 'inf');
     issueMove(w, [parent], 20.5, 10.5);
     const [half] = splitDivs(w, [parent]);
     expect(half).toBeTruthy();
@@ -534,13 +537,13 @@ describe('solid bodies', () => {
     expect(d.path.at(-1)).toBe(first);                             // the unit keeps the ground it was promised
   });
 
-  it('a split with no ground to stand on costs no men', () => {
+  it('a stack split with no ground to stand on costs no men', () => {
     const w = sand();
     for (let i = 0; i < W * H; i++) w.terr[i] = WATER;             // one island tile, nothing else to stand on
     w.terr[25 * W + 25] = LAND;
-    const d = spawnDiv(w, 1, 25.5, 25.5, 100, 100, 'inf');
+    const d = spawnDiv(w, 1, 25.5, 25.5, 300, 300, 'inf');
     expect(splitDivs(w, [d])).toHaveLength(0);
-    expect(d.men).toBe(100);                                       // no half was made, so no men were lost
+    expect(d.men).toBe(300);                                     // no atomic was peeled, so no men were lost
     expect(w.divs).toHaveLength(1);
   });
 

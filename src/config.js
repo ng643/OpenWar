@@ -57,10 +57,12 @@ export const RANGE = 1.8;       // melee engagement distance (tiles)
 // A division is a solid body. Friendly traffic can displace holders temporarily, and combat can
 // push defenders back, but every displacement still respects this radius, terrain and map bounds.
 export const DIV_RADIUS = 0.425;
-// A merge is a whole-detachment affair: same owner and type, centres within this many tiles, and only
-// while the combined men and combined nominal capacity still fit one normal unit of the type.
+// An atomic unit is one normal division: TYPES[type].men men. A merge stacks whole same-owner,
+// same-type detachments up to MERGE_STACK atomics (infantry 1000, armor 900, artillery 600 men),
+// and a split peels one atomic back off. Centres must stand within MERGE_RANGE tiles.
+export const MERGE_STACK = 10;
 export const MERGE_RANGE = 1.5;
-export const SPLIT_MIN_MEN = 20;  // a division below this many men is too small to split in two
+export const SPLIT_MIN_MEN = 20;  // a division below this many men is too small to split an atomic off
 export const ART_RANGE = 5;     // artillery shelling distance (tiles)
 export const VISION = 10;       // tiles a division can see (fog of war)
 

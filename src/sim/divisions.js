@@ -1,4 +1,4 @@
-import { TYPES, MERGE_RANGE, SPLIT_MIN_MEN } from '../config.js';
+import { TYPES, MERGE_RANGE, MERGE_STACK, SPLIT_MIN_MEN } from '../config.js';
 import { emit } from './world.js';
 import { findPath } from './pathfinding.js';
 import { formationSlots } from './formations.js';
@@ -145,24 +145,28 @@ export function haltDivs(units) {
 }
 
 /**
- * Split each division (>= SPLIT_MIN_MEN men) in two. The new half takes ground next to its parent; a
- * division with no free ground beside it is left alone, so splitting never loses men. Men, nominal
- * capacity and banked capture credit are partitioned, never minted: the half takes the floor share
- * (h = floor(men/2), hc = floor(cap/2)), the parent keeps the ceiling rest, both stay men <= cap, and
- * the credit follows the men it is attached to. A dead, inert, engaged, routing or rout-locked
- * division is refused.
- * @returns {object[]} the newly created halves
+ * Split one atomic unit off each division holding more than one. The peeled body is a whole atomic
+ * of the type (TYPES[type].men men and nominal capacity); it takes ground next to its parent, and a
+ * division with no free ground beside it is left alone, so splitting never loses men. Banked capture
+ * credit follows the men it is attached to. A body of one atomic or less, a dead, inert, engaged,
+ * routing or rout-locked division is refused.
+ * @returns {object[]} the newly created atomic bodies
  */
 export function splitDivs(world, units) {
   const added = [];
   for (const d of units) {
-    if (d.merged || d.men < SPLIT_MIN_MEN || d.eng || d.routing || d.routLocked) continue;
+    if (d.merged || d.eng || d.routing || d.routLocked) continue;
+    const unit = TYPES[d.type].men;
+    // A split peels whole atomics: the body must hold strictly more than one atomic of men and of
+    // nominal capacity, so a 10-stack splits back down to exactly ten atomics and a single atomic
+    // (or any wounded fragment of one) can never be divided.
+    if (d.men <= unit || d.cap <= unit) continue;
+    if (d.men < SPLIT_MIN_MEN) continue;
     const spot = spawnSpot(world, d.x + .35, d.y + .2);
     if (!spot) continue;
-    const h = Math.floor(d.men / 2), hc = Math.floor(d.cap / 2);
-    const credit = d.acc || 0, share = credit * (h / d.men);
-    d.men -= h; d.cap -= hc; d.acc = credit - share;
-    const n = spawnDiv(world, d.owner, spot.x, spot.y, h, hc, d.type);
+    const credit = d.acc || 0, share = credit * (unit / d.men);
+    d.men -= unit; d.cap -= unit; d.acc = credit - share;
+    const n = spawnDiv(world, d.owner, spot.x, spot.y, unit, unit, d.type);
     n.acc = share;
     // The half marches to ground of its own beside its parent. Copying the parent's route would send it
     // to the parent's own tile, where it would queue up behind a body that can never be pushed off.
@@ -175,14 +179,14 @@ export function splitDivs(world, units) {
 
 /**
  * Merge whole same-owner, same-type detachments whose centres stand within MERGE_RANGE tiles of each
- * other, provided the combined men AND combined nominal capacity still fit one normal division of the
- * type (TYPES[type].men). No oversized body can be created and a standard-cap unit cannot absorb
- * another one even when wounded: merging rebuilds a body, it never stacks armies or heals for free.
- * Survivors are processed strongest-first (id as the tie-break) and every eligible target greedily
- * takes on whatever still fits it, so a unit that fits nowhere simply stays standing. Men and capacity
- * are conserved, banked capture credit is summed but still bounded by the bank cap of 3, the absorber
- * keeps its orders, state and ground, and absorbed donors are handed over before being zeroed (and
- * removed by the next tick), so the survivors hold the whole budget.
+ * other, provided the combined men AND combined nominal capacity still fit MERGE_STACK atomics of the
+ * type (MERGE_STACK * TYPES[type].men: infantry 1000, armor 900, artillery 600). A stack merges up to
+ * that ceiling and splits back down to whole atomics; merging never heals for free (men and capacity
+ * are conserved) and beyond the ceiling a unit simply stays standing. Survivors are processed
+ * strongest-first (id as the tie-break) and every eligible target greedily takes on whatever still
+ * fits it. Banked capture credit is summed but still bounded by the bank cap of 3, the absorber keeps
+ * its orders, state and ground, and absorbed donors are handed over before being zeroed (and removed
+ * by the next tick), so the survivors hold the whole budget.
  * Dead, inert, engaged, routing or rout-locked divisions are refused; a healthy marching unit may merge.
  * @returns {{absorbed: object[]}}
  */
@@ -190,7 +194,7 @@ export function mergeDivs(units) {
   const absorbed = [];
   const eligible = d => !d.merged && d.men > 0 && !d.eng && !d.routing && !d.routLocked;
   for (const type of Object.keys(TYPES)) {
-    const T = TYPES[type];
+    const lim = TYPES[type].men * MERGE_STACK;
     const group = units.filter(d => d.type === type && eligible(d))
       .sort((a, b) => b.men - a.men || a.id - b.id);
     for (const t of group) {
@@ -198,7 +202,7 @@ export function mergeDivs(units) {
       for (const d of group) {
         if (d === t || !eligible(d) || d.owner !== t.owner) continue;
         if (Math.hypot(d.x - t.x, d.y - t.y) > MERGE_RANGE) continue;
-        if (t.men + d.men > T.men || t.cap + d.cap > T.men) continue;   // never an oversized body
+        if (t.men + d.men > lim || t.cap + d.cap > lim) continue;   // at most ten atomics in one body
         t.men += d.men; t.cap += d.cap;
         t.acc = Math.min(3, (t.acc || 0) + (d.acc || 0));               // credit sums, bank cap holds
         d.men = 0; d.cap = 0; d.acc = 0; d.merged = true;

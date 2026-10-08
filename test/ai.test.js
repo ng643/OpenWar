@@ -1189,25 +1189,28 @@ describe('AI muster', () => {
     expect(out.split).toHaveLength(0);
   });
 
-  it('splits a full idle body when the frontier is hungry, never under a heavier enemy', () => {
+  it('peels an atomic off a stacked idle body when the frontier is hungry, never under a heavier enemy', () => {
     const w = mkWorld(4451);
     const at = frontGround(w, 1);
-    const d = stage(w, 1, at.x, at.y, 100, 'inf');
+    const d = stage(w, 1, at.x, at.y, 200, 'inf');
+    const lone = stage(w, 1, at.x + 1, at.y, 100, 'inf');
     const p = w.players[0];
     p.aiPolicy = musterPolicy({ splitHunger: 0 });
     expect(aiState(w, p).frontierShare).toBeGreaterThan(0);
     const out = aiMuster(w, p, w.divs.filter(d => d.owner === 1), p.aiPolicy);
-    expect(out.split).toHaveLength(1);               // one full body divided
-    expect(out.split[0].men + d.men).toBe(100);
+    expect(out.split).toHaveLength(1);               // one stack peeled, the atomic left alone
+    expect(out.split[0].men).toBe(100);
+    expect(d.men).toBe(100);
+    expect(lone.men).toBe(100);
 
     const w2 = mkWorld(4451);                        // same ground, but a heavier enemy in contact
     const at2 = frontGround(w2, 1);
-    const d2 = stage(w2, 1, at2.x, at2.y, 100, 'inf');
-    stage(w2, 2, at2.x + 2, at2.y, 150, 'inf');
+    const d2 = stage(w2, 1, at2.x, at2.y, 200, 'inf');
+    stage(w2, 2, at2.x + 2, at2.y, 250, 'inf');
     const p2 = w2.players[0];
     p2.aiPolicy = musterPolicy({ splitHunger: 0 });
     expect(aiMuster(w2, p2, w2.divs.filter(x => x.owner === 1), p2.aiPolicy).split).toHaveLength(0);
-    expect(d2.men).toBe(100);
+    expect(d2.men).toBe(200);
   });
 
   it('leaves busy, engaged, routing and cornered bodies strictly alone', () => {

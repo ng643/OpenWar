@@ -1,7 +1,7 @@
 import { nearestLand } from '../sim/pathfinding.js';
 import { centerOn } from './camera.js';
 import { resolvePending, cedeAllies, cedeCount } from './ui-state.js';
-import { BUILDINGS, MAX_ROUTE_POINTS, ROAD_GOLD, MERGE_RANGE, SPLIT_MIN_MEN, TYPES } from '../config.js';
+import { BUILDINGS, MAX_ROUTE_POINTS, ROAD_GOLD, MERGE_RANGE, MERGE_STACK, SPLIT_MIN_MEN, TYPES } from '../config.js';
 
 /**
  * A division the sim will actually act on: still alive, not already absorbed by a merge, and free of
@@ -14,9 +14,10 @@ const NEEDS_TWO = 'Merging needs two or more free divisions of the same type - e
 /**
  * Why this selection cannot merge, or null when at least one merge would land. The UI must never
  * promise more than the sim delivers: merging only joins two free detachments of the same owner and
- * type, within MERGE_RANGE tiles, whose men AND capacity together still fit one normal division of
- * that type. Anything that does not fit stays separate, so this only needs to find one such pair;
- * the selection is bucketed per owner+type so the pair scan never compares unrelated divisions.
+ * type, within MERGE_RANGE tiles, whose men AND capacity together still fit MERGE_STACK atomics of
+ * that type (infantry 1000, armor 900, artillery 600). Anything that does not fit stays separate,
+ * so this only needs to find one such pair; the selection is bucketed per owner+type so the pair
+ * scan never compares unrelated divisions.
  */
 export function mergeBlock(sel) {
   const groups = new Map();
@@ -32,7 +33,7 @@ export function mergeBlock(sel) {
   for (const g of groups.values()) {
     if (g.length < 2) continue;
     sameType = true;
-    const lim = TYPES[g[0].type].men;
+    const lim = TYPES[g[0].type].men * MERGE_STACK;
     for (let i = 0; i < g.length; i++) {
       const a = g[i];
       for (let j = i + 1; j < g.length; j++) {
@@ -46,19 +47,21 @@ export function mergeBlock(sel) {
   }
   if (!sameType) return NEEDS_TWO;
   return 'Merging only joins same-type divisions within ' + MERGE_RANGE +
-    ' tiles whose men and capacity still fit one normal division - the rest stay separate';
+    ' tiles while their men and capacity still fit ' + MERGE_STACK + ' atomic units - the rest stay separate';
 }
 
-/** Why the selection cannot split, or null when at least one division would split in two. */
+/** Why the selection cannot split, or null when at least one division would peel an atomic off. */
 export function splitBlock(sel) {
-  let free = false;
+  let free = false, single = false;
   for (const d of sel) {
     if (!freeUnit(d)) continue;
-    if (d.men >= SPLIT_MIN_MEN) return null;
+    if (d.men > TYPES[d.type].men && d.cap > TYPES[d.type].men) return null;
+    if (d.men >= SPLIT_MIN_MEN) single = true;
     free = true;
   }
+  if (single) return 'Splitting peels one atomic unit off a stack: a single atomic cannot split further';
   return free
-    ? 'A division needs at least ' + SPLIT_MIN_MEN + ' men to split in half'
+    ? 'A division needs more than one atomic unit to split'
     : 'Splitting needs a free division - engaged, routing or cornered ones cannot split';
 }
 
@@ -126,12 +129,12 @@ export function createCommands(app, hud) {
       if (!r || !r.ok) return;
       if (r.k === 'cede') { hud.onCede(app.me, cedeSentTo, r.ceded | 0); return; }
       if (r.k === 'split') {
-        if (r.added && !r.added.length) hud.toast('Nothing split: a division needs ' + SPLIT_MIN_MEN + ' men or more and a free spot beside it');
+        if (r.added && !r.added.length) hud.toast('Nothing split: a stack needs more than one atomic unit and a free spot beside it');
         ui.pendingSelect = { ids: r.added, until: performance.now() + 3000 };
         resolvePending(ui, app.world);
       } else if (r.k === 'merge' && !(r.absorbed && r.absorbed.length)) {
         hud.toast('Nothing merged: divisions must be the same type, within ' + MERGE_RANGE +
-          ' tiles, and their men and capacity must still fit one normal division');
+          ' tiles, and their men and capacity must still fit ' + MERGE_STACK + ' atomic units');
       }
     },
 

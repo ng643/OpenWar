@@ -125,12 +125,13 @@ Single player uses the very same command path locally.
   after breaking contact, it is cornered: no second flight, and it fights while contact lasts.
   An uninterrupted router resumes its retained intention at 70% strength. New move, formation or route
   orders change that intention; Halt clears it without cancelling the immediate flight.
-- **Divisions:** one body holds at most one normal unit (Infantry 100, Armor 90, Artillery 60).
-  Split divides men, capacity and capture progress between the halves; merge only joins nearby same-type
-  detachments whose men and capacity still fit that ceiling. Neither creates nor loses men, and engaged,
-  routing or cornered divisions can do neither.
+- **Divisions:** an atomic unit is one normal division (Infantry 100, Armor 90, Artillery 60) and can
+  never split further. Merging stacks nearby same-type detachments into one body of up to 10 atomics
+  (infantry 1000, armor 900, artillery 600 men); splitting peels one atomic back off, so a full stack
+  splits back down to exactly ten atomics. Neither creates nor loses men, and engaged, routing or
+  cornered divisions can do neither.
 - Non-routing divisions capture only their own tile and the four tiles beside it, at the rate of one
-  normal unit at most. Taking enemy land costs men.
+  atomic unit at most however tall the stack stands. Taking enemy land costs men.
 - **Infantry** is balanced. **Armor** is fast and hard-hitting but pricey. **Artillery** shells enemies up
   to 5 tiles away but cannot capture land and is weak in melee.
 - **Logistics:** divisions need a continuous owned-land route to an owned city. A unit immediately
@@ -167,10 +168,10 @@ The trainer runs the real simulation, mutates and crosses every bounded policy v
 `src/sim/ai-policy.js`, and keeps measured candidates. Medium stays at the original policy; Hard is
 the strongest validated evolved candidate. Easy comes from a separate bounded search that selects
 genuinely weaker measured policies. Two of the knobs govern the muster pass: `mergeWound` consolidates
-wounded idle detachments that fit one normal body, and `splitHunger` divides full-strength idle bodies
-while the frontier is hungry. Both call the same `mergeDivs`/`splitDivs` a player's commands call, so
-the AI never conjures men, capacity or capture credit, and it never touches engaged, routing,
-cornered or otherwise busy divisions.
+wounded idle detachments into same-type stacks of up to ten atomics, and `splitHunger` peels an atomic
+off stacked idle bodies while the frontier is hungry. Both call the same `mergeDivs`/`splitDivs` a
+player's commands call, so the AI never conjures men, capacity or capture credit, and it never touches
+engaged, routing, cornered or otherwise busy divisions.
 
 The shipped run used 12 candidates, six generations, and a ten-minute simulation limit per match.
 Training, Hard selection, Easy selection, and final assessment use disjoint seed sets. Every comparison

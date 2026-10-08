@@ -2,7 +2,7 @@ import {
   TYPES, BUILDINGS, BUILD_IDS, BUILD_RADIUS, MANPOWER, GOLD,
   LOGISTICS_DISTANCE, REINFORCE_RATE, ROAD_GOLD, ROAD_SPEED, ROAD_LOGISTICS_COST,
   ROUT_FRAC, ROUT_RECOVER_FRAC, ROUT_MIN_DISTANCE, ROUT_MAX_DISTANCE,
-  PUSH_BASE, COLUMN_SPACING, FORT_RANGE, FORT_DEF, ISOLATED_COMBAT, MERGE_RANGE, SPLIT_MIN_MEN
+  PUSH_BASE, COLUMN_SPACING, FORT_RANGE, FORT_DEF, ISOLATED_COMBAT, MERGE_RANGE, MERGE_STACK, SPLIT_MIN_MEN
 } from '../config.js';
 import { buildCost, hasFactory, countBuilt } from '../sim/buildings.js';
 import { logisticsDistance, combatMult, reinforceRate } from '../sim/supply.js';
@@ -331,10 +331,10 @@ export function createHud(app) {
     const splitWhy = splitBlock(ui.sel), mergeWhy = mergeBlock(ui.sel);
     $('bSplit').disabled = splitWhy !== null;
     $('bSplit').title = splitWhy && ui.sel.size ? splitWhy
-      : 'Split each selected division in half: the halves share its men and capacity exactly, so no men are created';
+      : 'Split one atomic unit off each stacked division: the peeled body and its parent share men, capacity and capture progress exactly, so no men are created';
     $('bMerge').disabled = mergeWhy !== null;
     $('bMerge').title = mergeWhy && ui.sel.size ? mergeWhy
-      : 'Merge same-type divisions within ' + MERGE_RANGE + ' tiles while their men and capacity still fit one normal division';
+      : 'Merge same-type divisions within ' + MERGE_RANGE + ' tiles into a stack of up to ' + MERGE_STACK + ' atomic units';
   }
 
   /** Hook up the DOM buttons to commands. */
@@ -380,6 +380,7 @@ export function createHud(app) {
     set('hIsoOut', pct(ISOLATED_COMBAT));
     set('hSplitMin', SPLIT_MIN_MEN);
     set('hMergeRange', MERGE_RANGE);
+    set('hMergeStack', MERGE_STACK);
     set('hMenInf', TYPES.inf.men);
     set('hMenArm', TYPES.arm.men);
     set('hMenArt', TYPES.art.men);

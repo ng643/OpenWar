@@ -28,14 +28,15 @@ export const AI_POLICY_SPEC = Object.freeze({
   advance: Object.freeze({ lo: 4, hi: 14, base: 9 }),
   /** Capture search radius multiplier (1 at baseline). */
   captureRange: Object.freeze({ lo: 0.6, hi: 1.6, base: 1 }),
-  /** Wounded line: a body whose men have fallen below this share of a full division of its type
-   *  (men / TYPES[type].men) consolidates with a fitting same-type neighbour within MERGE_RANGE.
+  /** Wounded line: a body whose men have fallen below this share of one atomic of its type
+   *  (men / TYPES[type].men) consolidates with a fitting same-type neighbour within MERGE_RANGE,
+   *  up to the sim's ten-atomic stack ceiling.
    *  0 = never consolidate (the pre-policy behaviour), 0.9 = almost every understrength body counts
    *  as wounded. */
   mergeWound: Object.freeze({ lo: 0, hi: 0.9, base: 0 }),
   /** Frontier pressure - the share of the AI's own land standing on a capturable frontier, the
    *  frontierShare aiState computes (frontier tiles / owned tiles, capped at 1) - above which a
-   *  full-strength, idle body splits for land. 0 = split wherever any frontier exists, 1 = never
+   *  stacked, idle body peels one atomic off. 0 = split wherever any frontier exists, 1 = never
    *  split (the pre-policy behaviour). */
   splitHunger: Object.freeze({ lo: 0, hi: 1, base: 1 })
 });

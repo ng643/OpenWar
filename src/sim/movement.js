@@ -112,13 +112,13 @@ function stepHome(world, d, mv) {
 }
 
 /**
- * Seize land around the division, one tile at a time at a rate set by its strength as a fraction of a
- * normal unit of its type. The division never reaches beyond its own tile and the four cardinal
- * neighbours of that tile — no diagonal or distant painting — so one standard unit holds one
- * standard footprint however many men are merged into its body: strength is clamped to a normal unit
- * for the rate, and an idle division banks no free capture credit. Tiles must touch existing own or
- * allied land (or be directly underfoot); ground a teammate holds is never taken (see teams.js).
- * Taking enemy land costs men.
+ * Seize land around the division, one tile at a time at a rate set by its strength as a fraction of
+ * one atomic of its type. The division never reaches beyond its own tile and the four cardinal
+ * neighbours of that tile — no diagonal or distant painting — so one body holds one atomic
+ * footprint however tall the stack stands: strength is clamped to one atomic for the rate, and an
+ * idle division banks no free capture credit. Tiles must touch existing own or allied land (or be
+ * directly underfoot); ground a teammate holds is never taken (see teams.js). Taking enemy land
+ * costs men.
  */
 // The five tiles a division may capture: its own tile and the four cardinal neighbours, in fixed
 // underfoot/N/W/E/S order. Hoisted so a capture tick allocates nothing.
@@ -130,7 +130,7 @@ export function captureStep(world, d, dt) {
   if (d.men < 10 || !T.capt) return;
   const { terr, owner, cityAt } = world;
   const cx = d.x | 0, cy = d.y | 0, me = d.owner;
-  const strength = Math.min(1, Math.max(0, d.men / T.men));           // one normal unit, never more
+  const strength = Math.min(1, Math.max(0, d.men / T.men));           // one atomic unit, never more
   d.acc = Math.min(d.acc + dt * strength * (0.7 + T.men / 120) * T.capt, 3);
   if (d.acc < 1) return;
   while (d.acc >= 1) {

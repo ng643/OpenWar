@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { W, H, WATER, LAND, STEP, RANGE, TYPES, MERGE_RANGE, SPLIT_MIN_MEN } from '../src/config.js';
+import { W, H, WATER, LAND, STEP, RANGE, TYPES, MERGE_RANGE, MERGE_STACK, SPLIT_MIN_MEN } from '../src/config.js';
 import { createWorld } from '../src/sim/world.js';
 import { spawnDiv, splitDivs, mergeDivs } from '../src/sim/divisions.js';
 import { combat } from '../src/sim/combat.js';
 
 // A quiet world: no humans, no AI steps — these tests drive split/merge/combat directly.
 const mkWorld = (seed = 12345) => createWorld(seed, { humans: [], aiDelay: 1e9 });
+const LIM = type => TYPES[type].men * MERGE_STACK;
 
 /** Top-left corner of the first nx x ny block of standable tiles (anything but water). */
 function landBlock(world, nx, ny) {
@@ -35,73 +36,71 @@ function at(world, owner, x, y, men, cap = men, type = 'inf') {
 const sumMen = ds => ds.reduce((s, d) => s + d.men, 0);
 const sumCap = ds => ds.reduce((s, d) => s + d.cap, 0);
 
-describe('merge: whole detachments, never an oversized body', () => {
-  it('joins a pair that exactly fits the type ceiling and refuses one man over', () => {
-    const w = mkWorld(), B = landBlock(w, 4, 2), y = B.y + .5;
-    const a = at(w, 1, B.x + .5, y, 60, 60);
-    const b = at(w, 1, B.x + 1.5, y, 40, 40);
-    const { absorbed } = mergeDivs([a, b]);
-    expect(absorbed).toHaveLength(1);
-    expect(absorbed[0]).toBe(b);
-    expect([a.men, a.cap]).toEqual([TYPES.inf.men, TYPES.inf.men]);
-    expect([b.men, b.merged]).toEqual([0, true]);
+describe('merge: whole detachments stacked to ten atomics', () => {
+  it('stacks ten atomics and refuses the eleventh man over the ceiling', () => {
+    expect(MERGE_STACK).toBe(10);
+    const w = mkWorld(), B = landBlock(w, 12, 2), y = B.y + .5;
+    const stack = [];
+    for (let k = 0; k < 10; k++) stack.push(at(w, 1, B.x + .5 + k, y, 100, 100));
+    for (let k = 0; k < 10; k++) stack[k].x = B.x + .5;   // all within MERGE_RANGE of the absorber
+    const { absorbed } = mergeDivs(stack);
+    expect(absorbed).toHaveLength(9);
+    expect([stack[0].men, stack[0].cap]).toEqual([LIM('inf'), LIM('inf')]);
 
+    const extra = at(w, 1, B.x + .5, y, 1, 1);
+    expect(mergeDivs([stack[0], extra]).absorbed).toHaveLength(0);
+    expect(stack[0].men).toBe(LIM('inf'));
+    expect([extra.men, extra.merged]).toEqual([1, undefined]);
+
+    // artillery has a smaller atomic: ten atomics is 600, and one man more does not fit
     const w2 = mkWorld(), B2 = landBlock(w2, 4, 2), y2 = B2.y + .5;
-    const c = at(w2, 1, B2.x + .5, y2, 61, 61);
-    const d = at(w2, 1, B2.x + 1.5, y2, 40, 40);
-    expect(mergeDivs([c, d]).absorbed).toHaveLength(0);
-    expect([c.men, c.cap, d.men, d.cap]).toEqual([61, 61, 40, 40]);
-    expect(d.merged).toBeFalsy();
-
-    // artillery has a smaller ceiling: 40 + 20 exactly fills it, 40 + 21 does not
-    const w3 = mkWorld(), B3 = landBlock(w3, 4, 2), y3 = B3.y + .5;
-    const p = at(w3, 1, B3.x + .5, y3, 40, 40, 'art');
-    const q = at(w3, 1, B3.x + 1.5, y3, 20, 20, 'art');
+    const p = at(w2, 1, B2.x + .5, y2, 580, 580, 'art');
+    const q = at(w2, 1, B2.x + 1.5, y2, 20, 20, 'art');
     expect(mergeDivs([p, q]).absorbed).toHaveLength(1);
-    expect([p.men, p.cap]).toEqual([TYPES.art.men, TYPES.art.men]);
-
-    const w4 = mkWorld(), B4 = landBlock(w4, 4, 2), y4 = B4.y + .5;
-    const r = at(w4, 1, B4.x + .5, y4, 40, 40, 'art');
-    const s = at(w4, 1, B4.x + 1.5, y4, 21, 21, 'art');
+    expect([p.men, p.cap]).toEqual([LIM('art'), LIM('art')]);
+    const s = at(w2, 1, B2.x + 1.5, y2, 21, 21, 'art');
+    const r = at(w2, 1, B2.x + .5, y2, 580, 580, 'art');
     expect(mergeDivs([r, s]).absorbed).toHaveLength(0);
-    expect([r.men, s.men]).toEqual([40, 21]);
+    expect([r.men, s.men]).toEqual([580, 21]);
   });
 
   it('refuses a merge that fits men but overflows nominal capacity', () => {
     const w = mkWorld(), B = landBlock(w, 4, 2), y = B.y + .5;
-    const a = at(w, 1, B.x + .5, y, 50, 60);   // men 50+50 <= 100, but cap 60+41 = 101 > 100
-    const b = at(w, 1, B.x + 1.5, y, 50, 41);
+    const a = at(w, 1, B.x + .5, y, 500, 600);   // men 500+500 <= 1000, but cap 600+401 = 1001 > 1000
+    const b = at(w, 1, B.x + 1.5, y, 500, 401);
     expect(mergeDivs([a, b]).absorbed).toHaveLength(0);
-    expect([a.men, a.cap, b.men, b.cap]).toEqual([50, 60, 50, 41]);
+    expect([a.men, a.cap, b.men, b.cap]).toEqual([500, 600, 500, 401]);
   });
 
-  it('never stacks two standard-cap units, even wounded', () => {
+  it('stacks two wounded atomic-cap units into one body of two atomics', () => {
     const w = mkWorld(), B = landBlock(w, 4, 2), y = B.y + .5;
     const a = at(w, 1, B.x + .5, y, 50, 100);
     const b = at(w, 1, B.x + 1.5, y, 50, 100);
-    expect(mergeDivs([a, b]).absorbed).toHaveLength(0);
-    expect([a.men, a.cap, b.men, b.cap]).toEqual([50, 100, 50, 100]);
+    expect(mergeDivs([a, b]).absorbed).toHaveLength(1);
+    expect([a.men, a.cap]).toEqual([100, 200]);
   });
+
 
   it('fills every surviving target greedily and deterministically without losing men or capacity', () => {
     const layout = B => [
-      [B.x + .5, B.y + .5, 60], [B.x + 1.5, B.y + .5, 60],
-      [B.x + .5, B.y + 1.5, 40], [B.x + 1.5, B.y + 1.5, 40],
+      [B.x + .5, B.y + .5, 600], [B.x + 1.5, B.y + .5, 600],
+      [B.x + .5, B.y + 1.5, 400], [B.x + 1.5, B.y + 1.5, 400],
     ];
     const w1 = mkWorld(), B1 = landBlock(w1, 3, 3);
     const ds1 = layout(B1).map(([x, y, men]) => at(w1, 1, x, y, men, men));
     const men0 = sumMen(ds1), cap0 = sumCap(ds1);
     const r1 = mergeDivs(ds1);
-    expect(r1.absorbed.map(d => d.id)).toEqual([ds1[2].id, ds1[3].id]);   // strongest first, 40s taken in id order
-    expect(ds1.map(d => d.men)).toEqual([100, 100, 0, 0]);
+    expect(r1.absorbed.map(d => d.id)).toEqual([ds1[2].id, ds1[3].id]);   // strongest first, 400s taken in id order
+    expect(ds1.map(d => d.men)).toEqual([1000, 1000, 0, 0]);
     expect([sumMen(ds1), sumCap(ds1)]).toEqual([men0, cap0]);            // zeroed donors keep the books balanced
 
     const w2 = mkWorld(), B2 = landBlock(w2, 3, 3);
     const ds2 = layout(B2).map(([x, y, men]) => at(w2, 1, x, y, men, men));
     const r2 = mergeDivs([ds2[3], ds2[1], ds2[0], ds2[2]]);              // shuffled input resolves identically
     expect(r2.absorbed.map(d => d.id)).toEqual([ds2[2].id, ds2[3].id]);
-    expect(ds2.map(d => d.men)).toEqual([100, 100, 0, 0]);
+    expect(ds2.map(d => d.men)).toEqual([1000, 1000, 0, 0]);
   });
+
 
   it('refuses other types and owners, and only joins inside MERGE_RANGE', () => {
     const w = mkWorld(), B = landBlock(w, 5, 2), y = B.y + .5;
@@ -124,19 +123,21 @@ describe('merge: whole detachments, never an oversized body', () => {
 
   it('refuses dead, merged, engaged, routing and rout-locked units on both sides of the call', () => {
     const w = mkWorld(), B = landBlock(w, 8, 2), y = B.y + .5;
-    const d = at(w, 1, B.x + .5, y, 100, 100);
+    const d = at(w, 1, B.x + .5, y, 200, 200);
     for (const flag of ['eng', 'routing', 'routLocked']) {
       d[flag] = true;
       expect(splitDivs(w, [d])).toHaveLength(0);
-      expect([d.men, d.cap]).toEqual([100, 100]);
+      expect([d.men, d.cap]).toEqual([200, 200]);
       d[flag] = false;
     }
     d.merged = true;
     expect(splitDivs(w, [d])).toHaveLength(0);
     d.merged = false;
-    d.men = SPLIT_MIN_MEN - 1;
+    d.men = SPLIT_MIN_MEN - 1; d.cap = 200;
     expect(splitDivs(w, [d])).toHaveLength(0);
-    d.men = 100;
+    d.men = 100; d.cap = 100;                                  // a single atomic never divides
+    expect(splitDivs(w, [d])).toHaveLength(0);
+    d.men = 200; d.cap = 200;
 
     const t = at(w, 1, B.x + 4.5, y, 50, 50);
     const n = at(w, 1, B.x + 5.5, y, 50, 50);
@@ -156,7 +157,7 @@ describe('merge: whole detachments, never an oversized body', () => {
     n.men = 50;
     expect([t.men, n.men]).toEqual([50, 50]);
 
-    // a healthy marching unit may still split and merge
+    // a healthy marching stack may still split and merge
     const halves = splitDivs(w, [d]);
     expect(halves).toHaveLength(1);
     t.path = [1, 2]; n.path = [3];                          // orders under way do not block a merge
@@ -166,41 +167,65 @@ describe('merge: whole detachments, never an oversized body', () => {
   });
 });
 
-describe('split: men, capacity and credit are partitioned, never minted', () => {
-  it('splits odd men and capacity exactly, flooring the new half and sharing credit by men', () => {
+describe('split: one atomic peels off a stack, never minted', () => {
+  it('peels a whole atomic off a stack and shares credit by men', () => {
     const w = mkWorld(), B = landBlock(w, 8, 2), y = B.y + .5;
-    const d = at(w, 1, B.x + .5, y, 81, 81);
+    const d = at(w, 1, B.x + .5, y, 250, 250);
     expect(d.acc).toBe(0);                                  // a fresh body banks no capture credit
     d.acc = 1.2;
     const men0 = d.men, cap0 = d.cap;
     const [half] = splitDivs(w, [d]);
-    expect([half.men, half.cap]).toEqual([40, 40]);
-    expect([d.men, d.cap]).toEqual([41, 41]);
+    expect([half.men, half.cap]).toEqual([100, 100]);       // exactly one atomic peeled
+    expect([d.men, d.cap]).toEqual([150, 150]);
     expect(d.men + half.men).toBe(men0);
     expect(d.cap + half.cap).toBe(cap0);
     expect(d.men).toBeLessThanOrEqual(d.cap);
     expect(half.men).toBeLessThanOrEqual(half.cap);
-    expect(half.acc).toBeCloseTo(1.2 * 40 / 81, 12);        // credit follows the men, none is minted
+    expect(half.acc).toBeCloseTo(1.2 * 100 / 250, 12);      // credit follows the men, none is minted
     expect(d.acc + half.acc).toBeCloseTo(1.2, 12);
+    expect(half.acc).toBeLessThanOrEqual(d.acc + half.acc);
 
-    const e = at(w, 1, B.x + 4.5, y, 40, 41);               // even men, odd capacity
+    const e = at(w, 1, B.x + 4.5, y, 120, 200);             // wounded stack: still peels a full atomic
     const [m] = splitDivs(w, [e]);
-    expect([m.men, m.cap]).toEqual([20, 20]);
-    expect([e.men, e.cap]).toEqual([20, 21]);
+    expect([m.men, m.cap]).toEqual([100, 100]);
+    expect([e.men, e.cap]).toEqual([20, 100]);
     expect(m.acc).toBe(0);                                  // a creditless parent hands nothing down
   });
 
-  it('a split with nowhere to stand conserves men, capacity and credit', () => {
-    const w = mkWorld();
-    for (let i = 0; i < W * H; i++) w.terr[i] = WATER;
-    w.terr[25 * W + 25] = LAND;
-    const d = at(w, 1, 25.5, 25.5, 100, 100);
-    d.acc = 2;
-    expect(splitDivs(w, [d])).toHaveLength(0);
-    expect([d.men, d.cap, d.acc]).toEqual([100, 100, 2]);
-    expect(w.divs).toHaveLength(1);
+  it('a full ten-stack splits back down to exactly ten atomics', () => {
+    const w = mkWorld(), B = landBlock(w, 12, 3), y = B.y + .5;
+    const d = at(w, 1, B.x + .5, y, LIM('inf'), LIM('inf'));
+    const peeled = [];
+    for (let k = 0; k < 9; k++) {
+      const [half] = splitDivs(w, [d]);
+      expect(half).toBeTruthy();
+      peeled.push(half);
+    }
+    expect([d.men, d.cap]).toEqual([100, 100]);             // the last atomic stands
+    expect(splitDivs(w, [d])).toHaveLength(0);              // and it never divides
+    expect(peeled.map(h => [h.men, h.cap])).toEqual(Array.from({ length: 9 }, () => [100, 100]));
+    expect(d.men + peeled.reduce((s, h) => s + h.men, 0)).toBe(LIM('inf'));
+  });
+
+  it('a single atomic or a stack with nowhere to stand never splits', () => {
+    const w = mkWorld(), B = landBlock(w, 4, 2), y = B.y + .5;
+    const single = at(w, 1, B.x + .5, y, 100, 100);
+    expect(splitDivs(w, [single])).toHaveLength(0);
+    const frag = at(w, 1, B.x + 1.5, y, 60, 60);            // wounded fragment of one atomic
+    expect(splitDivs(w, [frag])).toHaveLength(0);
+    expect([single.men, frag.men]).toEqual([100, 60]);
+
+    const iso = mkWorld();
+    for (let i = 0; i < W * H; i++) iso.terr[i] = WATER;
+    iso.terr[25 * W + 25] = LAND;
+    const stack = at(iso, 1, 25.5, 25.5, 300, 300);
+    stack.acc = 2;
+    expect(splitDivs(iso, [stack])).toHaveLength(0);
+    expect([stack.men, stack.cap, stack.acc]).toEqual([300, 300, 2]);
+    expect(iso.divs).toHaveLength(1);
   });
 });
+
 
 describe('absorbed donors leave the fight', () => {
   it('sums merged credit up to the bank cap and keeps the absorbed body out of the fight', () => {
@@ -240,20 +265,21 @@ describe('absorbed donors leave the fight', () => {
 });
 
 describe('result contracts', () => {
-  it('returns the new halves and the absorbed donor objects, keeping ids stable', () => {
+  it('returns the peeled atomic and the absorbed donor objects, keeping ids stable', () => {
     const w = mkWorld(), B = landBlock(w, 4, 2), y = B.y + .5;
-    const d = at(w, 1, B.x + .5, y, 100, 100);
+    const d = at(w, 1, B.x + .5, y, 200, 200);
     const added = splitDivs(w, [d]);
     expect(Array.isArray(added)).toBe(true);
     expect(added).toHaveLength(1);
     const half = added[0];
     expect([half.owner, half.type]).toEqual([d.owner, d.type]);
+    expect([half.men, half.cap]).toEqual([100, 100]);
     expect(typeof half.id).toBe('number');
     expect(w.divs).toContain(half);
     const res = mergeDivs([d, half]);
     expect(Array.isArray(res.absorbed)).toBe(true);
     expect(res.absorbed[0]).toBe(half);                     // the donor object itself, for id mapping
-    expect([d.men, d.cap]).toEqual([100, 100]);
+    expect([d.men, d.cap]).toEqual([200, 200]);
     expect([half.men, half.merged]).toEqual([0, true]);
   });
 });

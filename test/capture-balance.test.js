@@ -67,7 +67,7 @@ describe('capture neighbourhood', () => {
     expect(after.sort()).toEqual(owned);                 // no further land was painted
   });
 
-  it('an oversized merged body holds the same single-unit footprint', () => {
+  it('a tall merged stack holds the same single-unit footprint', () => {
     const w = mkWorld(); const c = clearArea(w);
     const d = placeDiv(w, 1, c.x, c.y, 1000);            // ten times a normal infantry body
     for (let k = 0; k < 5; k++) { d.acc = 1; captureStep(w, d, 0); }
@@ -135,19 +135,19 @@ describe('capture fronts', () => {
 describe('capture rate', () => {
   const fullRate = dt => (0.7 + TYPES.inf.men / 120) * TYPES.inf.capt * dt;
 
-  it('a split division keeps the original total capture rate', () => {
+  it('a split stack keeps the original total capture rate', () => {
     const w = mkWorld(); const c = clearArea(w);
-    const whole = placeDiv(w, 1, c.x, c.y, 100);
-    const a = placeDiv(w, 1, c.x, c.y, 50);
-    const b = placeDiv(w, 1, c.x, c.y + 1, 50);
+    const whole = placeDiv(w, 1, c.x, c.y, 200);
+    const a = placeDiv(w, 1, c.x, c.y, 100);
+    const b = placeDiv(w, 1, c.x, c.y + 1, 100);
     captureStep(w, whole, 0.5);
     captureStep(w, a, 0.5);
     captureStep(w, b, 0.5);
-    expect(whole.acc).toBeCloseTo(fullRate(0.5), 12);    // a full body keeps its old steady rate
-    expect(a.acc + b.acc).toBeCloseTo(whole.acc, 12);    // the two halves sum to exactly that rate
+    expect(whole.acc).toBeCloseTo(fullRate(0.5), 12);    // a stack captures as one atomic
+    expect(a.acc + b.acc).toBeCloseTo(2 * whole.acc, 12); // two bodies on two fronts cover twice the ground
   });
 
-  it('an oversized body is clamped to one normal unit of strength', () => {
+  it('a tall stack is clamped to one atomic unit of strength', () => {
     const w = mkWorld(); const c = clearArea(w);
     const normal = placeDiv(w, 1, c.x, c.y, 100);
     const huge = placeDiv(w, 1, c.x, c.y + 1, 1000);

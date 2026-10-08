@@ -70,20 +70,20 @@ function place(w, pid, t, men, cap, type = 'inf') {
   return d;
 }
 
-describe('paid refill scales with nominal cap', () => {
-  it('splitting a division partitions its reserve-to-field replenishment (sum conserved)', () => {
-    // Whole body: one wounded standard infantry at 30 tiles (the standard cap is its own type's men).
+describe('paid refill scales with the stack', () => {
+  it('splitting a stack partitions its reserve-to-field replenishment (sum conserved)', () => {
+    // Whole stack: two wounded atomics at 30 tiles.
     const a = stage();
-    const orig = place(a.w, 1, a.run[29], 50, TYPES.inf.men, 'inf');
+    const orig = place(a.w, 1, a.run[29], 100, 200, 'inf');
     const d0 = logisticsDistance(a.w, orig);
     const R = reinforceRate(a.w, orig);
-    expect(R).toBeCloseTo(REINFORCE_RATE / (1 + d0 / LOGISTICS_DISTANCE), 12);
+    expect(R).toBeCloseTo(2 * REINFORCE_RATE / (1 + d0 / LOGISTICS_DISTANCE), 12);
 
-    // Its two halves: same tile, cap halved, men conserved. Fragmenting must not create extra supply.
+    // Its peel: same tile, one atomic each, men conserved. Fragmenting must not create extra supply.
     const b = stage();
     const t = b.run[29];
-    const h1 = place(b.w, 1, t, 25, TYPES.inf.men / 2, 'inf');
-    const h2 = place(b.w, 1, t, 25, TYPES.inf.men / 2, 'inf');
+    const h1 = place(b.w, 1, t, 50, TYPES.inf.men, 'inf');
+    const h2 = place(b.w, 1, t, 50, TYPES.inf.men, 'inf');
     expect(logisticsDistance(b.w, h1)).toBeCloseTo(d0, 9);
     expect(reinforceRate(b.w, h1) + reinforceRate(b.w, h2)).toBeCloseTo(R, 12);
 
@@ -98,7 +98,7 @@ describe('paid refill scales with nominal cap', () => {
     expect(gainB).toBeCloseTo(gainA, 9);
   });
 
-  it('normalizes every type by its own standard body and clamps oversized caps to full rate', () => {
+  it('normalizes every type by its own atomic and clamps tall stacks to ten shares', () => {
     const { w, run } = stage();
     const t = run[20];
     const d = logisticsDistance(w, place(w, 1, t, 10, 10, 'inf'));
@@ -106,8 +106,9 @@ describe('paid refill scales with nominal cap', () => {
     for (const [type, def] of Object.entries(TYPES)) {
       expect(reinforceRate(w, place(w, 1, t, def.men, def.men, type))).toBeCloseTo(base, 9);
       expect(reinforceRate(w, place(w, 1, t, def.men / 4, def.men / 2, type))).toBeCloseTo(base / 2, 9);
-      // Over-sized trusted fixtures keep the falloff, never exceeding a standard body's paid rate.
-      expect(reinforceRate(w, place(w, 1, t, 10, def.men + 20, type))).toBeCloseTo(base, 9);
+      expect(reinforceRate(w, place(w, 1, t, 10, 3 * def.men, type))).toBeCloseTo(3 * base, 9);
+      // Beyond the ten-stack ceiling the paid rate stops growing.
+      expect(reinforceRate(w, place(w, 1, t, 10, 12 * def.men, type))).toBeCloseTo(10 * base, 9);
     }
   });
 

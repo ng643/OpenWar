@@ -409,7 +409,7 @@ describe('setup: AI difficulty', () => {
     for (const id of ['easy', 'medium', 'hard']) {
       const p = getAIPolicy(id);
       expect(Object.isFrozen(p)).toBe(true);
-      expect(Object.keys(p).sort()).toEqual(['advance', 'armorShare', 'buildShare', 'captureRange', 'infantryShare', 'lineDemand', 'recruitTiles', 'roadShare']);
+      expect(Object.keys(p).sort()).toEqual(['advance', 'armorShare', 'buildShare', 'captureRange', 'infantryShare', 'lineDemand', 'mergeWound', 'recruitTiles', 'roadShare', 'splitHunger']);
     }
     expect(getAIPolicy('easy')).not.toEqual(getAIPolicy('hard'));   // the dropdown really changes play
   });

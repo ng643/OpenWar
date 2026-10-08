@@ -78,15 +78,15 @@ export function aiThink(world, p) {
   const roadHold = aiRoads(world, p, myCities, roadBudget(world, p), reserve, policy);
   recruit(world, p, mine, myCities, reserve + roadHold, policy);
 
-  // Muster the idle army before it is planned: wounded detachments consolidate and full ones divide
-  // while the frontier is hungry, through the same splitDivs/mergeDivs a player's commands call, so
-  // nothing is granted beyond the sim's own rules. The plan below then resolves against the
-  // consolidated roster.
+  // Muster the idle army before it is planned: wounded detachments consolidate into stacks and tall
+  // ones peel an atomic off while the frontier is hungry, through the same splitDivs/mergeDivs a
+  // player's commands call, so nothing is granted beyond the sim's own rules. The plan below then
+  // resolves against the consolidated roster.
   aiMuster(world, p, mine, policy);
 
-  // Absorbed donors linger in world.divs (zeroed, merged) until the next casualty sweep and halves
-  // are newborn, so the order pass rebuilds the roster from the live survivors; a fresh body still
-  // waits out its own think cooldown like any other.
+  // Absorbed donors linger in world.divs (zeroed, merged) until the next casualty sweep and peeled
+  // atomics are newborn, so the order pass rebuilds the roster from the live survivors; a fresh body
+  // still waits out its own think cooldown like any other.
   mine = world.divs.filter(d => d.owner === p.id && !d.merged && d.men > 0);
 
   const byId = new Map(mine.map(d => [d.id, d]));
@@ -221,33 +221,34 @@ function recruit(world, p, mine, myCities, reserve, policy = policyOf(world, p))
 
 /**
  * One muster pass of the idle army, run before the plan: wounded free detachments consolidate
- * through mergeDivs, then full-strength ones divide through splitDivs while the frontier is hungry -
- * the same two mutations a player's merge and split commands call, so men, capacity and capture
- * credit move exactly as the sim allows and nothing is conjured.
+ * through mergeDivs, then stacked ones peel an atomic off through splitDivs while the frontier is
+ * hungry - the same two mutations a player's merge and split commands call, so men, capacity and
+ * capture credit move exactly as the sim allows and nothing is conjured.
  *
  * Only bodies aiThink counts as free take part: not merged, engaged, routing, rout-locked or busy
  * with a path, route checkpoints or a displaced-ground anchor, and past their think cooldown. A
  * wounded body below the routing threshold still consolidates - reinforcement is exactly what it
- * needs, and mergeDivs only ever folds a body into a same-type neighbour. Every donor the pass
+ * needs, and mergeDivs only ever folds a body into a same-type stack. Every donor the pass
  * leaves behind is zeroed by the sim: the plan skips it and the next casualty sweep removes it. A
  * body that took part in a merge does not divide in the same think - it is a consolidation's
  * product, not raw material for the splitter.
  *
  * Merge (policy.mergeWound, the wounded line): a body is wounded below mergeWound of a full
- * division of its type. Every legitimate pair has at least one wounded side, and the heavier side
+ * atomic of its type. Every legitimate pair has at least one wounded side, and the heavier side
  * of such a pair is always the healthy one, so each healthy body takes its own mergeDivs call with
  * only nearby wounded partners - two healthy bodies can never consolidate - and the wounded
- * leftovers consolidate among themselves. At 0 nothing is wounded and the sim is never called.
+ * leftovers consolidate among themselves. The sim's ten-atomic ceiling still binds. At 0 nothing is
+ * wounded and the sim is never called.
  *
  * Split (policy.splitHunger, the frontier pressure): when aiState's frontierShare - the share of
- * the AI's own land standing on a capturable frontier - is above the knob, full-strength idle
- * bodies divide in id order, so a long border with few troops gets more bodies to cover it.
- * Artillery never divides (it cannot capture, so capture hunger does not apply to it), and a body
- * with an equal or larger enemy mass within contact range does not divide either - a split in
- * contact just feeds the enemy two weak halves. At 1 the knob can never be exceeded and the sim is
- * never called, which is the pre-policy behaviour.
+ * the AI's own land standing on a capturable frontier - is above the knob, stacked idle
+ * bodies peel one atomic off in id order, so a long border with few troops gets more bodies to
+ * cover it. Artillery never divides (it cannot capture, so capture hunger does not apply to it),
+ * and a body with an equal or larger enemy mass within contact range does not divide either - a
+ * split in contact just feeds the enemy two weak bodies. At 1 the knob can never be exceeded and
+ * the sim is never called, which is the pre-policy behaviour.
  * @param {object[]} mine the player's divisions, as aiThink read them
- * @returns {{merged:object[],split:object[]}} absorbed donors and newborn halves, for tests
+ * @returns {{merged:object[],split:object[]}} absorbed donors and newborn atomics, for tests
  */
 export function aiMuster(world, p, mine, policy = policyOf(world, p)) {
   const free = mine.filter(d => d.owner === p.id && !d.merged && d.men > 0 &&
@@ -277,13 +278,13 @@ export function aiMuster(world, p, mine, policy = policyOf(world, p)) {
     if (rest.length) out.merged.push(...mergeDivs(rest).absorbed);
   }
 
-  // --- split: full-strength bodies divide while the frontier is hungry ----------------------------
+  // --- split: stacked bodies peel an atomic off while the frontier is hungry ----------------------
   // frontierShare is capped at 1, so a knob at (or above) 1 can never be exceeded: skip the scan.
   if (policy.splitHunger < 1 && aiState(world, p).frontierShare > policy.splitHunger) {
     const dividers = [];
     for (const d of free) {
       if (d.type === 'art') continue;                       // artillery cannot capture: hunger never applies
-      if (d.men < TYPES[d.type].men) continue;              // only a full division divides; halves fight as halves
+      if (d.men <= TYPES[d.type].men || d.cap <= TYPES[d.type].men) continue;  // a stack peels; an atomic never divides
       if (d.merged || preMen.get(d.id) !== d.men) continue; // just mustered: no coming apart the same think
       const foe = nearbyEnemy(world, p, d.x, d.y);
       if (foe && foe.men >= d.men) continue;                // never divide under an equal or larger enemy mass
