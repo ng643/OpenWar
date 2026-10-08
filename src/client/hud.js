@@ -2,12 +2,13 @@ import {
   TYPES, BUILDINGS, BUILD_IDS, BUILD_RADIUS, MANPOWER, GOLD,
   LOGISTICS_DISTANCE, REINFORCE_RATE, ROAD_GOLD, ROAD_SPEED, ROAD_LOGISTICS_COST,
   ROUT_FRAC, ROUT_RECOVER_FRAC, ROUT_MIN_DISTANCE, ROUT_MAX_DISTANCE,
-  PUSH_BASE, COLUMN_SPACING, FORT_RANGE, FORT_DEF, ISOLATED_COMBAT
+  PUSH_BASE, COLUMN_SPACING, FORT_RANGE, FORT_DEF, ISOLATED_COMBAT, MERGE_RANGE, SPLIT_MIN_MEN
 } from '../config.js';
 import { buildCost, hasFactory, countBuilt } from '../sim/buildings.js';
 import { logisticsDistance, combatMult, reinforceRate } from '../sim/supply.js';
 import { moving } from '../sim/collision.js';
 import { cedeAllies, cedeCount } from './ui-state.js';
+import { mergeBlock, splitBlock } from './commands.js';
 
 const $ = id => document.getElementById(id);
 
@@ -325,8 +326,15 @@ export function createHud(app) {
       : selectionHtml(world, ui) +
         (ui.column ? '<br><span class="col">Column mode: right-click orders a single-file route; Shift+right-click adds checkpoints (C toggles)</span>' : '');
     $('bStop').disabled = !ui.sel.size;
-    $('bSplit').disabled = !ui.sel.size;
-    $('bMerge').disabled = ui.sel.size < 2;
+    // Split/Merge stay honest about the sim's bounds: offered only when the selection holds a pair (or
+    // division) the sim would actually act on. The sim remains the final gate; these only gate the UI.
+    const splitWhy = splitBlock(ui.sel), mergeWhy = mergeBlock(ui.sel);
+    $('bSplit').disabled = splitWhy !== null;
+    $('bSplit').title = splitWhy && ui.sel.size ? splitWhy
+      : 'Split each selected division in half: the halves share its men and capacity exactly, so no men are created';
+    $('bMerge').disabled = mergeWhy !== null;
+    $('bMerge').title = mergeWhy && ui.sel.size ? mergeWhy
+      : 'Merge same-type divisions within ' + MERGE_RANGE + ' tiles while their men and capacity still fit one normal division';
   }
 
   /** Hook up the DOM buttons to commands. */
@@ -370,6 +378,11 @@ export function createHud(app) {
     set('hFortRange', FORT_RANGE);
     set('hFortRed', pct(1 - FORT_DEF));
     set('hIsoOut', pct(ISOLATED_COMBAT));
+    set('hSplitMin', SPLIT_MIN_MEN);
+    set('hMergeRange', MERGE_RANGE);
+    set('hMenInf', TYPES.inf.men);
+    set('hMenArm', TYPES.arm.men);
+    set('hMenArt', TYPES.art.men);
   }
   initHelp();
 

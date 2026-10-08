@@ -112,32 +112,42 @@ function stepHome(world, d, mv) {
 }
 
 /**
- * Seize land around the division, one tile at a time at a rate proportional to its strength.
- * Tiles must touch existing own or allied land (or be directly underfoot); ground a teammate holds
- * is never taken (see teams.js). Taking enemy land costs men.
+ * Seize land around the division, one tile at a time at a rate set by its strength as a fraction of a
+ * normal unit of its type. The division never reaches beyond its own tile and the four cardinal
+ * neighbours of that tile — no diagonal or distant painting — so one standard unit holds one
+ * standard footprint however many men are merged into its body: strength is clamped to a normal unit
+ * for the rate, and an idle division banks no free capture credit. Tiles must touch existing own or
+ * allied land (or be directly underfoot); ground a teammate holds is never taken (see teams.js).
+ * Taking enemy land costs men.
  */
+// The five tiles a division may capture: its own tile and the four cardinal neighbours, in fixed
+// underfoot/N/W/E/S order. Hoisted so a capture tick allocates nothing.
+const CAPTURE_DX = [0, 0, -1, 1, 0];
+const CAPTURE_DY = [0, -1, 0, 0, 1];
+
 export function captureStep(world, d, dt) {
   const T = TYPES[d.type];
   if (d.men < 10 || !T.capt) return;
   const { terr, owner, cityAt } = world;
-  const r = 1.5 + Math.sqrt(d.men) / 8, r2 = r * r, cx = d.x | 0, cy = d.y | 0, me = d.owner;
-  d.acc = Math.min(d.acc + dt * (0.7 + d.men / 120) * T.capt, 3);
+  const cx = d.x | 0, cy = d.y | 0, me = d.owner;
+  const strength = Math.min(1, Math.max(0, d.men / T.men));           // one normal unit, never more
+  d.acc = Math.min(d.acc + dt * strength * (0.7 + T.men / 120) * T.capt, 3);
+  if (d.acc < 1) return;
   while (d.acc >= 1) {
     let best = -1, bs = 1e9;
-    const x0 = Math.max(0, Math.floor(d.x - r)), x1 = Math.min(world.w - 1, Math.ceil(d.x + r));
-    const y0 = Math.max(0, Math.floor(d.y - r)), y1 = Math.min(world.h - 1, Math.ceil(d.y + r));
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    for (let k = 0; k < CAPTURE_DX.length; k++) {
+      const x = cx + CAPTURE_DX[k], y = cy + CAPTURE_DY[k];
+      if (x < 0 || y < 0 || x >= world.w || y >= world.h) continue;
       const i = y * world.w + x;
       if (terr[i] === WATER || allied(world, owner[i], me)) continue;   // never take own or allied ground
       const dd = (x + .5 - d.x) ** 2 + (y + .5 - d.y) ** 2;
-      if (dd > r2) continue;
       const here = x === cx && y === cy;
       if (!here && !((x > 0 && allied(world, owner[i - 1], me)) || (x < world.w - 1 && allied(world, owner[i + 1], me)) ||
                      (y > 0 && allied(world, owner[i - world.w], me)) || (y < world.h - 1 && allied(world, owner[i + world.w], me)))) continue;
       const sc = dd + world.rand() * 0.4 - (cityAt[i] >= 0 ? 1.5 : 0);
       if (sc < bs) { bs = sc; best = i; }
     }
-    if (best < 0) { d.acc = 1; return; }
+    if (best < 0) { d.acc = 0; return; }                              // idle: bank nothing
     const cost = (owner[best] ? 0.25 : 0.04) * (terr[best] === MOUNTAIN ? 2 : 1) * (cityAt[best] >= 0 ? 3 : 1);
     d.acc -= 1; d.men -= cost;
     setOwner(world, best, me);

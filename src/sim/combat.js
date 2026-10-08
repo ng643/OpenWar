@@ -116,6 +116,10 @@ export function combat(world, dt) {
     const a = divs[i];
     for (let j = i + 1; j < divs.length; j++) {
       const b = divs[j];
+      // Absorbed donors stay in the list until the next casualty sweep. They are skipped before any
+      // pair effect: an inert body (men 0 or merged) must not fight, block, shove or be hit on its
+      // way out — the strength it carried was already handed to its absorber.
+      if (a.merged || a.men <= 0 || b.merged || b.men <= 0) continue;
       if (allied(world, a.owner, b.owner)) continue;
       const dx = a.x - b.x;
       if (dx > ART_RANGE || dx < -ART_RANGE) continue;

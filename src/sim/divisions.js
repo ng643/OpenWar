@@ -1,4 +1,4 @@
-import { TYPES } from '../config.js';
+import { TYPES, MERGE_RANGE, SPLIT_MIN_MEN } from '../config.js';
 import { emit } from './world.js';
 import { findPath } from './pathfinding.js';
 import { formationSlots } from './formations.js';
@@ -36,7 +36,7 @@ export function spawnDiv(world, owner, x, y, men, cap, type = 'inf') {
     anchor: null,        // ground this body was displaced from, to walk back to (see collision.makeWay)
     returnT: 0,          // earliest time to start walking back there
     vis: true,           // visible to the human (client-side fog)
-    acc: 1,              // land-capture accumulator
+    acc: 0,              // land-capture accumulator: a fresh body banks nothing (a split half gets its share)
     aiGoal: null,
     nextThink: world.time + 1 + world.rand() * 2
   };
@@ -145,19 +145,25 @@ export function haltDivs(units) {
 }
 
 /**
- * Split each division (>=20 men) in two. The new half takes ground next to its parent; a division with
- * no free ground beside it is left alone, so splitting never loses men.
+ * Split each division (>= SPLIT_MIN_MEN men) in two. The new half takes ground next to its parent; a
+ * division with no free ground beside it is left alone, so splitting never loses men. Men, nominal
+ * capacity and banked capture credit are partitioned, never minted: the half takes the floor share
+ * (h = floor(men/2), hc = floor(cap/2)), the parent keeps the ceiling rest, both stay men <= cap, and
+ * the credit follows the men it is attached to. A dead, inert, engaged, routing or rout-locked
+ * division is refused.
  * @returns {object[]} the newly created halves
  */
 export function splitDivs(world, units) {
   const added = [];
   for (const d of units) {
-    if (d.men < 20) continue;
+    if (d.merged || d.men < SPLIT_MIN_MEN || d.eng || d.routing || d.routLocked) continue;
     const spot = spawnSpot(world, d.x + .35, d.y + .2);
     if (!spot) continue;
-    const h = Math.floor(d.men / 2), hc = Math.ceil(d.cap / 2);
-    d.men -= h; d.cap -= hc;
+    const h = Math.floor(d.men / 2), hc = Math.floor(d.cap / 2);
+    const credit = d.acc || 0, share = credit * (h / d.men);
+    d.men -= h; d.cap -= hc; d.acc = credit - share;
     const n = spawnDiv(world, d.owner, spot.x, spot.y, h, hc, d.type);
+    n.acc = share;
     // The half marches to ground of its own beside its parent. Copying the parent's route would send it
     // to the parent's own tile, where it would queue up behind a body that can never be pushed off.
     const t = freeTileNear(world, d.x + 1.5, d.y, claimedEnds(world), new Set([n]));
@@ -168,22 +174,36 @@ export function splitDivs(world, units) {
 }
 
 /**
- * Merge same-type divisions within 4 tiles of the largest of their type.
- * Absorbed divisions are zeroed (and removed by the next tick).
+ * Merge whole same-owner, same-type detachments whose centres stand within MERGE_RANGE tiles of each
+ * other, provided the combined men AND combined nominal capacity still fit one normal division of the
+ * type (TYPES[type].men). No oversized body can be created and a standard-cap unit cannot absorb
+ * another one even when wounded: merging rebuilds a body, it never stacks armies or heals for free.
+ * Survivors are processed strongest-first (id as the tie-break) and every eligible target greedily
+ * takes on whatever still fits it, so a unit that fits nowhere simply stays standing. Men and capacity
+ * are conserved, banked capture credit is summed but still bounded by the bank cap of 3, the absorber
+ * keeps its orders, state and ground, and absorbed donors are handed over before being zeroed (and
+ * removed by the next tick), so the survivors hold the whole budget.
+ * Dead, inert, engaged, routing or rout-locked divisions are refused; a healthy marching unit may merge.
  * @returns {{absorbed: object[]}}
  */
 export function mergeDivs(units) {
   const absorbed = [];
+  const eligible = d => !d.merged && d.men > 0 && !d.eng && !d.routing && !d.routLocked;
   for (const type of Object.keys(TYPES)) {
-    const group = units.filter(d => d.type === type && !d.merged).sort((a, b) => b.men - a.men);
-    if (group.length < 2) continue;
-    const t = group[0];
-    for (let k = 1; k < group.length; k++) {
-      const d = group[k];
-      if (Math.hypot(d.x - t.x, d.y - t.y) > 4) continue;
-      t.men += d.men; t.cap += d.cap;
-      d.men = 0; d.merged = true;
-      absorbed.push(d);
+    const T = TYPES[type];
+    const group = units.filter(d => d.type === type && eligible(d))
+      .sort((a, b) => b.men - a.men || a.id - b.id);
+    for (const t of group) {
+      if (!eligible(t)) continue;                 // an earlier survivor already absorbed this one
+      for (const d of group) {
+        if (d === t || !eligible(d) || d.owner !== t.owner) continue;
+        if (Math.hypot(d.x - t.x, d.y - t.y) > MERGE_RANGE) continue;
+        if (t.men + d.men > T.men || t.cap + d.cap > T.men) continue;   // never an oversized body
+        t.men += d.men; t.cap += d.cap;
+        t.acc = Math.min(3, (t.acc || 0) + (d.acc || 0));               // credit sums, bank cap holds
+        d.men = 0; d.cap = 0; d.acc = 0; d.merged = true;
+        absorbed.push(d);
+      }
     }
   }
   return { absorbed };

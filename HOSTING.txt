@@ -1,0 +1,303 @@
+Frontline / OpenWar - Hosting and Deployment
+==========================================
+
+This file explains how the game is hosted, how the parts fit
+together, and how a release gets deployed to production.
+
+1. WHAT THE GAME IS
+-------------------
+Browser territory-conquest game. The client is static HTML/JS/CSS
+built by Vite into dist/. Multiplayer is authoritative: one Node.js
+process runs the simulation for every room and sends each player
+only what they are allowed to see.
+
+Source layout (relevant to hosting):
+  index.html, src/, vite.config.js  - browser client + shared sim
+  src/sim/                          - pure simulation, runs in browser and Node
+  src/client/session.js             - local session vs WebSocket net session
+  src/net/protocol.js               - JSON wire protocol { t: <type>, ... }
+  server/index.js                   - HTTP static server + WebSocket endpoint
+  server/room.js                    - lobby, authoritative game, reconnects
+  server/snapshot.js                - per-player fogged snapshots
+  deploy/                           - production VPS infrastructure
+  .github/workflows/pages.yml       - GitHub Pages frontend deploy
+
+2. ARCHITECTURE
+---------------
+Single player:
+  Browser runs the sim locally (createLocalSession). No server needed.
+  Any static file host works because vite.config.js uses base: './'.
+
+Multiplayer / local full stack:
+  +-----------------+      HTTP :8080 /        +--------------------+
+  | Browser client  | -----------------------> | Node server        |
+  | (dist/index.html|      WebSocket /ws       | server/index.js    |
+  |  + src/client)  | <----------------------> | + server/room.js   |
+  +-----------------+   join/configure/seat/   +--------------------+
+                        start/cmd/rematch --->   authoritative sim,
+                        lobby/init/snap/ev/res   1 loop drives all
+                        <--- 10 Hz snapshots     rooms (25 ms tick)
+
+  - HTTP GET serves files from dist/, with SPA fallback to index.html.
+    If dist/ is missing it answers 404 "Client not built. Run: npm run build".
+  - WebSocket path is /ws only. maxPayload 16 KB.
+  - One setInterval loop (25 ms) advances every room in real time.
+  - Snapshots go out at 10 Hz (SNAP_EVERY = 2 ticks x 50 ms).
+  - With fog on, each snapshot contains only visible divisions;
+    enemy routes/paths are never sent; resource balances stay private.
+  - Terrain is regenerated client-side from seed + dimensions;
+    territory/buildings/roads are sent as deltas.
+
+Production (VPS + GitHub Pages):
+  Browser(s)
+    |
+    +-- https://130.162.162.132/ -----------> nginx :443
+    +-- https://ng643.github.io/... --------> GitHub Pages (static dist/)
+                                                      |
+                                                      | wss://130.162.162.132/ws
+                                                      v
+                                              nginx :443 (/ws proxy)
+                                                      |
+                                                      v
+                                              127.0.0.1:8080 Node backend
+                                              (openwar-backend.service)
+
+  nginx serves the release's dist/ from disk first (try_files),
+  and proxies misses, /ws, and /healthz to the loopback backend.
+  The backend never faces the internet directly.
+
+3. HOW THE CLIENT FINDS THE SERVER
+----------------------------------
+src/client/session.js serverUrl() precedence:
+  1. ?server=ws://host:port/ws (or wss://) URL parameter. Highest priority.
+  2. VITE_SERVER_URL baked in at build time (used by Pages builds).
+  3. Dev (vite): ws://<page-hostname>:8080/ws (or wss:// on https).
+  4. Built client: wss://<page-host>/ws on https, ws://<page-host>/ws on http.
+
+So local `npm start` works with no config (same-host /ws), split dev
+works with no config (Vite :5173 -> backend :8080), and Pages works
+because the workflow bakes VITE_SERVER_URL into the bundle.
+
+4. LOCAL RUNS
+-------------
+  npm install
+  npm run dev      # Vite on http://127.0.0.1:5173, hot reload.
+                   # Uses local sim for SP; net games hit ws://<host>:8080/ws.
+                   # Add ?seed=12345 for a reproducible map.
+
+  npm run build    # static build into dist/. SP works from any static host.
+
+  npm run server   # backend on :8080 using existing dist/ for static files.
+  npm start        # = vite build && node server/index.js
+                   # full game on http://localhost:8080 (SP + MP).
+
+  PORT=9000 npm run server   # change port (server/index.js reads PORT).
+  Direct `node server/index.js` always binds 0.0.0.0; production uses
+  deploy/run-server.mjs to bind 127.0.0.1 instead (see section 6).
+
+Lobby flow (same locally and in production):
+  Open page -> name + room code (blank = new room) -> Join/create or Watch.
+  Invite link is ?room=CODE. Host sets rules/roster/bots/teams, presses Start.
+  Rooms: up to 64 connections (players + spectators), 1 human per open seat.
+  Reload/reconnect keeps your role/seat; 20 s absence -> AI covers you.
+  Rematch keeps setup/roles. MP is fixed 1x, no pause.
+
+5. GITHUB PAGES FRONTEND
+------------------------
+File: .github/workflows/pages.yml
+Triggers: push to main, or manual workflow_dispatch.
+
+Steps:
+  1. Checkout, Node 24, npm ci.
+  2. Validate repository variable MULTIPLAYER_SERVER_URL:
+     must be set, must be absolute URL, must use wss://.
+     Set under Settings > Secrets and variables > Actions > Variables.
+  3. Build with VITE_SERVER_URL = MULTIPLAYER_SERVER_URL.
+  4. Upload dist/ as Pages artifact, deploy via actions/deploy-pages@v4.
+
+Notes:
+  - Enable Pages with Source = GitHub Actions.
+  - Pages hosts ONLY the static client. Multiplayer still needs the VPS
+    backend running and reachable at that wss:// URL.
+  - Do not put credentials in the frontend URL or repo variable.
+  - The backend must list the Pages origin in ALLOWED_ORIGINS
+    (currently https://ng643.github.io in openwar-backend.service).
+
+6. PRODUCTION VPS (BACKEND + NGINX)
+-----------------------------------
+Host: 130.162.162.132 (Ubuntu 22.04, nginx 1.18 syntax).
+All files in deploy/ are infrastructure-owned and live OUTSIDE release
+archives at /opt/openwar/deploy/.
+
+  deploy/install-infra.sh        - one-time + idempotent infra installer.
+  deploy/run-server.mjs          - systemd wrapper around server/index.js.
+  deploy/openwar-backend.service - backend systemd unit (loopback only).
+  deploy/nginx-openwar.conf      - full HTTPS site (needs a certificate).
+  deploy/nginx-openwar-http.conf - HTTP/ACME bootstrap site (first boot).
+  deploy/deploy.sh               - release installer with rollback.
+  deploy/healthcheck.sh          - HTTP + WebSocket health probe.
+  deploy/wscheck.mjs             - real RFC6455 upgrade + origin-contract probe.
+  deploy/certbot-renew.service/.timer - 4x/day certificate renewal.
+  deploy/openwar-healthcheck.service/.timer - health probe every 2 min.
+
+6.1 Backend service
+  Unit: openwar-backend.service
+    User=openwar, WorkingDirectory=/opt/openwar/current
+    ExecStart=/usr/bin/node /opt/openwar/deploy/run-server.mjs
+    Environment:
+      NODE_ENV=production
+      PORT=8080
+      HOST=127.0.0.1
+      ALLOWED_ORIGINS=https://ng643.github.io
+      OPENWAR_APP_DIR=/opt/openwar/current
+      STATIC_DIR=/opt/openwar/current/dist
+    Hardening: NoNewPrivileges, PrivateTmp/Devices, ProtectSystem=strict,
+      ProtectHome/KernelTunables/Modules/ControlGroups, RestrictNamespaces,
+      RestrictSUIDSGID, AF_INET/AF_INET6/AF_UNIX only, @system-service
+      syscalls, no capabilities, MemoryHigh=512M MemoryMax=768M,
+      LimitNOFILE=8192, UMask=0027. Writable path: /opt/openwar/shared only.
+    ConditionPathExists=/opt/openwar/current/server/index.js, so the unit
+    is cleanly skipped until a release is activated.
+
+  Wrapper: run-server.mjs
+    `node server/index.js` only honours PORT and binds 0.0.0.0.
+    The wrapper imports createGameServer() from the active release and
+    calls createGameServer({ port, host, staticDir }) with HOST=127.0.0.1,
+    without touching game code. Handles SIGTERM/SIGINT gracefully.
+
+6.2 Origin policy (server/index.js verifyClient)
+  - No Origin header -> allowed (non-browser / curl).
+  - Same-host page (Origin hostname == Host header) -> allowed.
+  - Origin in ALLOWED_ORIGINS set -> allowed (this is how Pages works).
+  - Anything else -> WebSocket rejected.
+  wscheck.mjs verifies exactly this: same-host 101, Pages 101,
+  https://evil.example.invalid rejected.
+
+6.3 nginx
+  Full site (nginx-openwar.conf):
+    :80  - serves /.well-known/acme-challenge/ from /var/www/openwar-acme,
+           redirects everything else to https://.
+    :443 - ssl http2, cert /etc/letsencrypt/live/130.162.162.132/,
+           TLS 1.2/1.3, hardened headers (nosniff, same-origin referrer).
+           root /opt/openwar/current/dist (release symlink).
+           Hashed assets: Cache-Control public, max-age=604800, try_files $uri @app.
+           / and /index.html: Cache-Control no-store, try_files then @app.
+           /ws: proxy_pass http://127.0.0.1:8080 with Upgrade/Connection
+                headers, 3600 s timeouts, buffering off.
+           /healthz: local-only probe, proxied to backend, no access log.
+           @app: proxy_pass http://127.0.0.1:8080 (backend serves its own
+                 dist/ too, so a release without dist/ still answers).
+
+  Bootstrap site (nginx-openwar-http.conf):
+    :80 only, ACME webroot + plain-text stub. Used to obtain the first
+    certificate; install-infra.sh picks it automatically when no cert exists.
+
+6.4 TLS certificates
+  Let's Encrypt IP-address certificate, shortlived profile (6-day validity).
+  Renewal: certbot-renew.timer runs 00:17/06:17/12:17/18:17 UTC daily
+  (RandomizedDelaySec=1800); certbot-renew.service runs
+  `certbot renew --quiet --no-random-sleep-on-renew --deploy-hook
+   "systemctl reload nginx"`. Skipped until the renewal config exists.
+
+6.5 Health monitoring
+  openwar-healthcheck.timer: every 2 min (OnBootSec=2min, OnUnitActiveSec=2min).
+  openwar-healthcheck.service: oneshot, runs healthcheck.sh as openwar.
+  healthcheck.sh checks:
+    1. https://130.162.162.132/healthz (TLS verified, hairpin via public IP).
+    2. http://127.0.0.1:8080/ (backend directly).
+       Both accept any 2xx-4xx (a release without dist/ 404s here; that is
+       reported separately by deploy.sh, not a health failure). 5xx/refused/
+       TLS failure = FAIL.
+    3. node wscheck.mjs: real upgrades through nginx for the 3 origin cases.
+  Output goes to the journal. deploy.sh also calls healthcheck.sh as its gate.
+
+7. RELEASE PROCESS
+------------------
+7.1 Build a release archive (on your machine, not the VPS):
+  Expected layout (single top-level dir optional):
+    package.json, package-lock.json, server/index.js, src/**, dist/**
+  dist/ should be the production `npm run build` output; it is served at /.
+
+7.2 Install infrastructure (once per VPS, as root):
+  Copy deploy/ to the VPS, then:
+    sudo /opt/openwar/deploy/install-infra.sh
+  This creates /opt/openwar/{releases,shared,deploy}, /var/www/openwar-acme,
+  the openwar system user, copies deploy files into /opt/openwar/deploy,
+  installs the nginx site (bootstrap if no cert yet), installs and enables
+  the 5 systemd units, starts the timers, reloads nginx.
+  Then, on a fresh box: run certbot with webroot /var/www/openwar-acme to
+  get the IP cert, and re-run install-infra.sh to switch to the TLS site.
+
+7.3 Deploy a release (on the VPS, as root):
+    sudo /opt/openwar/deploy/deploy.sh /path/to/openwar-release-<version>.tgz
+  What deploy.sh does:
+    1. Validates root, tarball exists; derives sha12 + UTC stamp.
+    2. Extracts to temp dir, unwraps a single top-level dir if present.
+    3. Requires package.json and server/index.js in the archive.
+    4. Copies to /opt/openwar/releases/<stamp>-<sha12>.
+    5. npm ci --omit=dev from package-lock.json (production deps only).
+    6. Warns if dist/index.html is missing (backend will 404 static).
+    7. chown root:root, chmod u=rwX,go=rX (immutable, root-owned code).
+    8. Flips /opt/openwar/current symlink atomically (symlink + mv -T).
+    9. systemctl restart openwar-backend; waits up to 10 s for active.
+   10. Runs healthcheck.sh up to 5 times (2 s apart). Process "active"
+       does not mean the port is bound yet, hence the retries.
+   11. On success: starts healthcheck timer, prunes releases to KEEP=5
+       (never the active one), prints the active release path.
+       On failure: prints backend logs, restores previous symlink (or
+       removes it if there was none), restarts/stops the unit, exits 1.
+
+8. CAPACITY AND LIMITS
+----------------------
+  server/index.js: MAX_ROOMS = 50, MAX_SOCKETS = 300, JOIN_TIMEOUT = 10 s.
+  src/net/protocol.js: MAX_CLIENTS = 64 per room (cities + spectators).
+  Player seats are capped by the map's actual city capacity
+  (Small/Standard/Large usually 14/24/38), not by MAX_CLIENTS.
+  Reserved bot seats cannot be claimed by humans.
+  Heartbeat: ws ping every 15 s, dead sockets terminated.
+  Duplicate tab with same token: old connection closed with 4000.
+
+9. ENVIRONMENT AND URL KNOBS
+----------------------------
+  Backend:
+    PORT=8080                  server port (direct run + wrapper).
+    HOST=127.0.0.1             only honoured via run-server.mjs wrapper.
+    ALLOWED_ORIGINS            comma-separated full origins for split hosting,
+                               e.g. https://ng643.github.io. Same-host always works.
+    OPENWAR_APP_DIR            release root (/opt/openwar/current).
+    STATIC_DIR                 static dir (/opt/openwar/current/dist).
+  Frontend build:
+    VITE_SERVER_URL            baked-in default backend, e.g.
+                               wss://130.162.162.132/ws (set from
+                               MULTIPLAYER_SERVER_URL in the Pages workflow).
+  Page URL parameters:
+    ?server=ws://host:port/ws  override backend for this page load.
+    ?room=CODE                 lobby invite link.
+    ?seed=12345                reproducible single-player map (dev).
+
+10. TROUBLESHOOTING
+-------------------
+  "Client not built. Run: npm run build"
+    Backend's staticDir has no index.html. Rebuild (npm run build) and
+    redeploy with dist/ included; deploy.sh warns about this.
+
+  WebSocket 101 expected but rejected / "Could not reach the game server"
+    Check nginx /ws proxy (Upgrade + Connection headers), backend running
+    (systemctl status openwar-backend), and Origin: Pages origin must be in
+    ALLOWED_ORIGINS; same-host pages need no allowlist. Run wscheck.mjs.
+
+  Deploy rolled back
+    deploy.sh prints the last 20 lines of the backend journal. Common causes:
+    missing package-lock.json deps, bad import in server/index.js, port busy,
+    healthcheck failing (cert expired, nginx down). Fix, rebuild, redeploy;
+    the previous release is already restored.
+
+  Certificate failures
+    Check certbot-renew.service logs and that /.well-known/acme-challenge/
+    is reachable over HTTP. IP certs last 6 days; the 4x/day timer handles it
+    once issuance works.
+
+  Health timer silent
+    Both the backend unit and healthcheck service have ConditionPathExists on
+    /opt/openwar/current/server/index.js: with no release deployed they are
+    skipped, not failed. Deploy a release first.

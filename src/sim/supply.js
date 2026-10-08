@@ -1,5 +1,5 @@
 import {
-  LOGISTICS_DISTANCE, ISOLATED_COMBAT, REINFORCE_RATE, ROAD_LOGISTICS_COST, TCOST, WATER
+  LOGISTICS_DISTANCE, ISOLATED_COMBAT, REINFORCE_RATE, ROAD_LOGISTICS_COST, TCOST, WATER, TYPES
 } from '../config.js';
 import { tileOf } from './geom.js';
 
@@ -312,12 +312,16 @@ export function combatMult(world, unit) {
 }
 
 /**
- * Reinforcement rate for `unit` in men/s: REINFORCE_RATE / (1 + D / LOGISTICS_DISTANCE) when connected,
- * 0 when isolated. Callers fund the men man-for-man from the reserves pool and only while the
- * division is unengaged and below its cap (see economy).
+ * Reinforcement rate for `unit` in men/s. The old falloff REINFORCE_RATE / (1 + D / LOGISTICS_DISTANCE)
+ * is scaled by how much of a standard body it commands — min(1, max(0, unit.cap / TYPES[unit.type].men)).
+ * A full standard division (cap = its type's men) reinforces exactly as before; a fragment reinforcing
+ * with a fraction of the nominal cap draws that fraction. Nominal-cap budgets partition, so splitting a
+ * division never multiplies the paid men/s drawn at the same supply. 0 when isolated. Callers fund the
+ * men man-for-man from the reserves pool and only while the division is unengaged and below its cap.
  */
 export function reinforceRate(world, unit) {
   const d = logisticsDistance(world, unit);
   if (!Number.isFinite(d)) return 0;
-  return REINFORCE_RATE / (1 + d / LOGISTICS_DISTANCE);
+  const scale = Math.min(1, Math.max(0, unit.cap / TYPES[unit.type].men));
+  return (REINFORCE_RATE * scale) / (1 + d / LOGISTICS_DISTANCE);
 }

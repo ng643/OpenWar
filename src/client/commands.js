@@ -1,7 +1,66 @@
 import { nearestLand } from '../sim/pathfinding.js';
 import { centerOn } from './camera.js';
 import { resolvePending, cedeAllies, cedeCount } from './ui-state.js';
-import { BUILDINGS, MAX_ROUTE_POINTS, ROAD_GOLD } from '../config.js';
+import { BUILDINGS, MAX_ROUTE_POINTS, ROAD_GOLD, MERGE_RANGE, SPLIT_MIN_MEN, TYPES } from '../config.js';
+
+/**
+ * A division the sim will actually act on: still alive, not already absorbed by a merge, and free of
+ * the combat states that block both split and merge — engaged, routing, and cornered (routLocked).
+ */
+const freeUnit = d => !!d && !d.merged && d.men > 0 && !d.eng && !d.routing && !d.routLocked;
+const MERGE_R2 = MERGE_RANGE * MERGE_RANGE;
+const NEEDS_TWO = 'Merging needs two or more free divisions of the same type - engaged, routing or cornered ones cannot merge';
+
+/**
+ * Why this selection cannot merge, or null when at least one merge would land. The UI must never
+ * promise more than the sim delivers: merging only joins two free detachments of the same owner and
+ * type, within MERGE_RANGE tiles, whose men AND capacity together still fit one normal division of
+ * that type. Anything that does not fit stays separate, so this only needs to find one such pair;
+ * the selection is bucketed per owner+type so the pair scan never compares unrelated divisions.
+ */
+export function mergeBlock(sel) {
+  const groups = new Map();
+  let free = 0;
+  for (const d of sel) {
+    if (!freeUnit(d)) continue;
+    free++;
+    const key = d.owner + '|' + d.type, g = groups.get(key);
+    if (g) g.push(d); else groups.set(key, [d]);
+  }
+  if (free < 2) return NEEDS_TWO;
+  let sameType = false;
+  for (const g of groups.values()) {
+    if (g.length < 2) continue;
+    sameType = true;
+    const lim = TYPES[g[0].type].men;
+    for (let i = 0; i < g.length; i++) {
+      const a = g[i];
+      for (let j = i + 1; j < g.length; j++) {
+        const b = g[j];
+        if (a.men + b.men > lim || a.cap + b.cap > lim) continue;
+        const dx = a.x - b.x, dy = a.y - b.y;
+        if (dx * dx + dy * dy > MERGE_R2) continue;
+        return null;
+      }
+    }
+  }
+  if (!sameType) return NEEDS_TWO;
+  return 'Merging only joins same-type divisions within ' + MERGE_RANGE +
+    ' tiles whose men and capacity still fit one normal division - the rest stay separate';
+}
+
+/** Why the selection cannot split, or null when at least one division would split in two. */
+export function splitBlock(sel) {
+  let free = false;
+  for (const d of sel) {
+    if (!freeUnit(d)) continue;
+    if (d.men >= SPLIT_MIN_MEN) return null;
+    free = true;
+  }
+  return free
+    ? 'A division needs at least ' + SPLIT_MIN_MEN + ' men to split in half'
+    : 'Splitting needs a free division - engaged, routing or cornered ones cannot split';
+}
 
 /**
  * Player-facing actions shared by keyboard, mouse and HUD buttons.
@@ -49,18 +108,30 @@ export function createCommands(app, hud) {
       send({ k: 'raise', type, city: ui.selCity ? app.world.cities.indexOf(ui.selCity) : -1 });
     },
     halt() { if (ui.sel.size && canAct()) send({ k: 'halt', ids: ids() }); },
-    split() { if (ui.sel.size && canAct()) send({ k: 'split', ids: ids() }); },
-    merge() { if (ui.sel.size > 1 && canAct()) send({ k: 'merge', ids: ids() }); },
+    split() {
+      if (!canAct() || !ui.sel.size) return;
+      const why = splitBlock(ui.sel);
+      if (why) { hud.toast(why); return; }
+      send({ k: 'split', ids: ids() });
+    },
+    merge() {
+      if (!canAct() || !ui.sel.size) return;
+      const why = mergeBlock(ui.sel);
+      if (why) { hud.toast(why); return; }
+      send({ k: 'merge', ids: ids() });
+    },
 
     /** Result of a split/merge: from the local sim immediately, or from the server a moment later. */
     onResult(r) {
       if (!r || !r.ok) return;
       if (r.k === 'cede') { hud.onCede(app.me, cedeSentTo, r.ceded | 0); return; }
       if (r.k === 'split') {
+        if (r.added && !r.added.length) hud.toast('Nothing split: a division needs ' + SPLIT_MIN_MEN + ' men or more and a free spot beside it');
         ui.pendingSelect = { ids: r.added, until: performance.now() + 3000 };
         resolvePending(ui, app.world);
-      } else if (r.k === 'merge' && !r.absorbed.length) {
-        hud.toast('Merging needs 2+ divisions of the same type within 4 tiles');
+      } else if (r.k === 'merge' && !(r.absorbed && r.absorbed.length)) {
+        hud.toast('Nothing merged: divisions must be the same type, within ' + MERGE_RANGE +
+          ' tiles, and their men and capacity must still fit one normal division');
       }
     },
 
