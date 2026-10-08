@@ -4,7 +4,7 @@
   "trained": true,
   "bootstrap": false,
   "generatedBy": "scripts/train-ai.js",
-  "generatedAt": "2026-10-03T16:17:30.041Z",
+  "generatedAt": "2026-10-08T14:35:32.246Z",
   "note": "Produced by real seeded natural selection inside the shipped simulation. Medium is the retained deployed baseline (its held-out measurements are recorded); Hard is the best evolved candidate. Easy is the weakest measured candidate from the sampled archive plus a bounded weakening search, played against the baseline on its own seeds, and is only labelled measured weaker when its own numbers say so.",
   "config": {
     "pop": 12,
@@ -53,8 +53,8 @@
     "weakenGens": 3,
     "weakenPop": 10,
     "extendedFrom": {
-      "file": "C:\\Dev\\OpenFront2\\src\\sim\\ai-models-pass1.json",
-      "generatedAt": "2026-10-03T14:48:06.284Z",
+      "file": "C:\\Dev\\OpenFront2\\src\\sim\\ai-models.json",
+      "generatedAt": "2026-10-03T16:17:30.041Z",
       "trained": true
     }
   },
@@ -66,16 +66,18 @@
   "profiles": {
     "easy": {
       "params": {
-        "recruitTiles": 28.45334216430783,
-        "infantryShare": 0.5523071488877758,
-        "armorShare": 0.09771113838767632,
-        "buildShare": 0.4687450590264052,
+        "recruitTiles": 24.961720511969176,
+        "infantryShare": 0.7954534638021141,
+        "armorShare": 0.07536619370803238,
+        "buildShare": 0.16224132656469004,
         "roadShare": 0.05,
-        "lineDemand": 2.795110970437527,
+        "lineDemand": 2.274663862884045,
         "advance": 4,
-        "captureRange": 0.9885911217657849
+        "captureRange": 1.2655321023892612,
+        "mergeWound": 0,
+        "splitHunger": 0.8951811118051409
       },
-      "origin": "weakest measured candidate on the easy seeds: 'weak-18' from weakening search, gen 3; mean score 1.189 vs baseline self-play 1.7168 over 8 games [seeds 8302,8404,8506,8608], win rate 0.25 - measured weaker than the retained baseline Medium by 0.5277"
+      "origin": "weakest measured candidate on the easy seeds: 'weak-15' from weakening search, gen 2; mean score 0.3276 vs baseline self-play 1.7191 over 8 games [seeds 8302,8404,8506,8608], win rate 0 - measured weaker than the retained baseline Medium by 1.3915"
     },
     "medium": {
       "params": {
@@ -86,22 +88,26 @@
         "roadShare": 0.3,
         "lineDemand": 2,
         "advance": 9,
-        "captureRange": 1
+        "captureRange": 1,
+        "mergeWound": 0,
+        "splitHunger": 1
       },
-      "origin": "retained deployed baseline (compatibility: existing default gameplay) - evaluated on the same held-out seeds: rank 6/6, mean score 1.7483"
+      "origin": "retained deployed baseline (compatibility: existing default gameplay) - evaluated on the same held-out seeds: rank 6/6, mean score 1.7249"
     },
     "hard": {
       "params": {
-        "recruitTiles": 22.47511393809691,
-        "infantryShare": 0.6237944553187117,
-        "armorShare": 0.32620554468128826,
-        "buildShare": 0.6468989459448493,
+        "recruitTiles": 36.325833200477064,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.14358323754393493,
+        "buildShare": 0.7,
         "roadShare": 0.14085756624117496,
-        "lineDemand": 0.9058072958141564,
-        "advance": 6.4212732701562345,
-        "captureRange": 1.3968678389210254
+        "lineDemand": 1.697200945392251,
+        "advance": 5.08478574315086,
+        "captureRange": 0.9188983089989051,
+        "mergeWound": 0,
+        "splitHunger": 0.9936269326135516
       },
-      "origin": "best evolved candidate: evolved candidate 'final-top2' (validation rank 1/6, mean score 2.9317 vs baseline 0.4982, win rate 1)"
+      "origin": "best evolved candidate: evolved candidate 'final-top1' (validation rank 1/6, mean score 2.9056 vs baseline 0.5313, win rate 1)"
     }
   },
   "validation": {
@@ -114,49 +120,51 @@
     "ranking": [
       {
         "rank": 1,
-        "id": "final-top2",
+        "id": "final-top1",
         "source": "top of the final evaluated population",
         "params": {
-          "recruitTiles": 22.47511393809691,
-          "infantryShare": 0.6237944553187117,
-          "armorShare": 0.32620554468128826,
-          "buildShare": 0.6468989459448493,
+          "recruitTiles": 36.325833200477064,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.14358323754393493,
+          "buildShare": 0.7,
           "roadShare": 0.14085756624117496,
-          "lineDemand": 0.9058072958141564,
-          "advance": 6.4212732701562345,
-          "captureRange": 1.3968678389210254
+          "lineDemand": 1.697200945392251,
+          "advance": 5.08478574315086,
+          "captureRange": 0.9188983089989051,
+          "mergeWound": 0,
+          "splitHunger": 0.9936269326135516
         },
-        "meanScore": 2.9317,
-        "opponentMean": 0.4982,
+        "meanScore": 2.9056,
+        "opponentMean": 0.5313,
         "wins": 8,
         "games": 8,
         "winRate": 1,
         "perSeed": [
           {
             "seed": 9109,
-            "mean": 2.9533,
-            "opponent": 0.4383,
+            "mean": 2.8921,
+            "opponent": 0.5462,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 9203,
-            "mean": 2.9458,
-            "opponent": 0.4445,
+            "mean": 2.9199,
+            "opponent": 0.4203,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 9407,
-            "mean": 2.901,
-            "opponent": 0.5856,
+            "mean": 2.9154,
+            "opponent": 0.5733,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 9601,
-            "mean": 2.9266,
-            "opponent": 0.5242,
+            "mean": 2.8952,
+            "opponent": 0.5856,
             "wins": 2,
             "games": 2
           }
@@ -167,46 +175,48 @@
         "id": "archive-worst1",
         "source": "weakest archived member (gen 6)",
         "params": {
-          "recruitTiles": 28.618212014436722,
-          "infantryShare": 0.7171763554261997,
-          "armorShare": 0.23282364457380023,
-          "buildShare": 0.6358215401764027,
-          "roadShare": 0.14886147886281836,
-          "lineDemand": 1.5317875586450098,
-          "advance": 6.4212732701562345,
-          "captureRange": 1.2247627661563456
+          "recruitTiles": 30.130992584861815,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.14994326761923726,
+          "buildShare": 0.5667128225788474,
+          "roadShare": 0.14085756624117496,
+          "lineDemand": 1.8001183953136204,
+          "advance": 5.08478574315086,
+          "captureRange": 0.9188983089989051,
+          "mergeWound": 0,
+          "splitHunger": 0.9593296844977885
         },
-        "meanScore": 2.6147,
-        "opponentMean": 0.8446,
+        "meanScore": 2.6578,
+        "opponentMean": 0.5657,
         "wins": 7,
         "games": 8,
         "winRate": 0.875,
         "perSeed": [
           {
             "seed": 9109,
-            "mean": 2.8544,
-            "opponent": 0.6045,
+            "mean": 2.9595,
+            "opponent": 0.5288,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 9203,
-            "mean": 2.9078,
-            "opponent": 0.5276,
+            "mean": 2.9017,
+            "opponent": 0.5295,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 9407,
-            "mean": 1.7756,
-            "opponent": 1.7238,
+            "mean": 1.8655,
+            "opponent": 0.6242,
             "wins": 1,
             "games": 2
           },
           {
             "seed": 9601,
-            "mean": 2.9212,
-            "opponent": 0.5224,
+            "mean": 2.9045,
+            "opponent": 0.58,
             "wins": 2,
             "games": 2
           }
@@ -214,49 +224,51 @@
       },
       {
         "rank": 3,
-        "id": "archive-worst2",
-        "source": "weakest archived member (gen 6)",
+        "id": "final-top2",
+        "source": "top of the final evaluated population",
         "params": {
-          "recruitTiles": 24.986945394892246,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.19639715022174642,
+          "recruitTiles": 36.325833200477064,
+          "infantryShare": 0.85,
+          "armorShare": 0.09999999999999998,
           "buildShare": 0.7,
           "roadShare": 0.15000000000000002,
-          "lineDemand": 1.8746042475104332,
-          "advance": 7.824816624401137,
-          "captureRange": 1.1952345919562504
+          "lineDemand": 1.9956878390163184,
+          "advance": 5.256926821079105,
+          "captureRange": 1.0679317732574418,
+          "mergeWound": 0.07423859622795136,
+          "splitHunger": 1
         },
-        "meanScore": 2.6005,
-        "opponentMean": 0.8624,
+        "meanScore": 2.6176,
+        "opponentMean": 0.8599,
         "wins": 7,
         "games": 8,
         "winRate": 0.875,
         "perSeed": [
           {
             "seed": 9109,
-            "mean": 2.8945,
-            "opponent": 0.5774,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 9203,
-            "mean": 1.7305,
-            "opponent": 1.6649,
+            "mean": 1.7126,
+            "opponent": 1.7805,
             "wins": 1,
             "games": 2
           },
           {
+            "seed": 9203,
+            "mean": 2.911,
+            "opponent": 0.5584,
+            "wins": 2,
+            "games": 2
+          },
+          {
             "seed": 9407,
-            "mean": 2.9008,
-            "opponent": 0.5864,
+            "mean": 2.9216,
+            "opponent": 0.5767,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 9601,
-            "mean": 2.8763,
-            "opponent": 0.6207,
+            "mean": 2.9252,
+            "opponent": 0.5239,
             "wins": 2,
             "games": 2
           }
@@ -264,99 +276,103 @@
       },
       {
         "rank": 4,
-        "id": "final-top1",
+        "id": "final-top3",
         "source": "top of the final evaluated population",
         "params": {
-          "recruitTiles": 18.86839158833027,
-          "infantryShare": 0.7192754615144804,
-          "armorShare": 0.23072453848551955,
-          "buildShare": 0.6468989459448493,
-          "roadShare": 0.14085756624117496,
-          "lineDemand": 1.0103768218308686,
-          "advance": 5.108707191888243,
-          "captureRange": 1.2247627661563456
+          "recruitTiles": 36.325833200477064,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.14994326761923726,
+          "buildShare": 0.7,
+          "roadShare": 0.10316150671569634,
+          "lineDemand": 1.067787069454789,
+          "advance": 4,
+          "captureRange": 0.8938975698547438,
+          "mergeWound": 0,
+          "splitHunger": 0.9936269326135516
         },
-        "meanScore": 2.3368,
-        "opponentMean": 1.1437,
-        "wins": 6,
+        "meanScore": 2.0565,
+        "opponentMean": 1.4209,
+        "wins": 5,
         "games": 8,
-        "winRate": 0.75,
+        "winRate": 0.625,
         "perSeed": [
           {
             "seed": 9109,
-            "mean": 2.8943,
-            "opponent": 0.567,
-            "wins": 2,
+            "mean": 1.8242,
+            "opponent": 1.6195,
+            "wins": 1,
             "games": 2
           },
           {
             "seed": 9203,
-            "mean": 1.7752,
-            "opponent": 1.7243,
+            "mean": 1.7478,
+            "opponent": 1.7239,
             "wins": 1,
             "games": 2
           },
           {
             "seed": 9407,
-            "mean": 1.726,
-            "opponent": 1.7641,
-            "wins": 1,
+            "mean": 2.9044,
+            "opponent": 0.5916,
+            "wins": 2,
             "games": 2
           },
           {
             "seed": 9601,
-            "mean": 2.9516,
-            "opponent": 0.5194,
-            "wins": 2,
+            "mean": 1.7497,
+            "opponent": 1.7485,
+            "wins": 1,
             "games": 2
           }
         ]
       },
       {
         "rank": 5,
-        "id": "final-top3",
-        "source": "top of the final evaluated population",
+        "id": "archive-worst2",
+        "source": "weakest archived member (gen 1)",
         "params": {
-          "recruitTiles": 29.899492425378412,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.26854130862746384,
-          "buildShare": 0.551368145289598,
-          "roadShare": 0.14085756624117496,
-          "lineDemand": 1.0103768218308686,
-          "advance": 6.4212732701562345,
-          "captureRange": 1.0679317732574418
+          "recruitTiles": 17.68428778182715,
+          "infantryShare": 0.6237944553187117,
+          "armorShare": 0.14994326761923726,
+          "buildShare": 0.6468989459448493,
+          "roadShare": 0.19124771005008373,
+          "lineDemand": 0.8,
+          "advance": 14,
+          "captureRange": 1.0591338275698945,
+          "mergeWound": 0,
+          "splitHunger": 1
         },
-        "meanScore": 2.3157,
-        "opponentMean": 1.157,
-        "wins": 6,
+        "meanScore": 1.9989,
+        "opponentMean": 1.193,
+        "wins": 5,
         "games": 8,
-        "winRate": 0.75,
+        "winRate": 0.625,
         "perSeed": [
           {
             "seed": 9109,
-            "mean": 2.8395,
-            "opponent": 0.6028,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 9203,
-            "mean": 1.7473,
-            "opponent": 1.7174,
+            "mean": 1.6368,
+            "opponent": 1.7615,
             "wins": 1,
             "games": 2
           },
           {
-            "seed": 9407,
-            "mean": 2.926,
-            "opponent": 0.5598,
+            "seed": 9203,
+            "mean": 2.8697,
+            "opponent": 0.5936,
             "wins": 2,
             "games": 2
           },
           {
+            "seed": 9407,
+            "mean": 1.8392,
+            "opponent": 0.6572,
+            "wins": 1,
+            "games": 2
+          },
+          {
             "seed": 9601,
-            "mean": 1.75,
-            "opponent": 1.7481,
+            "mean": 1.6499,
+            "opponent": 1.7597,
             "wins": 1,
             "games": 2
           }
@@ -374,39 +390,41 @@
           "roadShare": 0.3,
           "lineDemand": 2,
           "advance": 9,
-          "captureRange": 1
+          "captureRange": 1,
+          "mergeWound": 0,
+          "splitHunger": 1
         },
-        "meanScore": 1.7483,
-        "opponentMean": 1.7483,
+        "meanScore": 1.7249,
+        "opponentMean": 1.7249,
         "wins": 4,
         "games": 8,
         "winRate": 0.5,
         "perSeed": [
           {
             "seed": 9109,
-            "mean": 1.7495,
-            "opponent": 1.7495,
+            "mean": 1.7041,
+            "opponent": 1.7041,
             "wins": 1,
             "games": 2
           },
           {
             "seed": 9203,
-            "mean": 1.7457,
-            "opponent": 1.7457,
+            "mean": 1.6975,
+            "opponent": 1.6975,
             "wins": 1,
             "games": 2
           },
           {
             "seed": 9407,
-            "mean": 1.7484,
-            "opponent": 1.7484,
+            "mean": 1.75,
+            "opponent": 1.75,
             "wins": 1,
             "games": 2
           },
           {
             "seed": 9601,
-            "mean": 1.7497,
-            "opponent": 1.7497,
+            "mean": 1.748,
+            "opponent": 1.748,
             "wins": 1,
             "games": 2
           }
@@ -455,127 +473,127 @@
           7103,
           7207
         ],
-        "aWins": 27,
-        "bWins": 4,
+        "aWins": 22,
+        "bWins": 10,
         "games": 32,
-        "aScore": 81.7414115687944,
-        "bScore": 25.939616247105114,
+        "aScore": 69.89475680878321,
+        "bScore": 40.49975701693184,
         "perSeed": [
           {
             "seed": 5101,
-            "a": 2.883,
-            "b": 0.5151,
+            "a": 2.8864,
+            "b": 0.6067,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5203,
-            "a": 2.8905,
-            "b": 0.5574,
+            "a": 3.0439,
+            "b": 0.251,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5309,
-            "a": 2.9661,
-            "b": 0.3141,
-            "aWins": 2,
+            "a": 1.7265,
+            "b": 1.718,
+            "aWins": 1,
             "games": 2
           },
           {
             "seed": 5407,
-            "a": 2.9277,
-            "b": 0.5714,
-            "aWins": 2,
+            "a": 1.7437,
+            "b": 1.6469,
+            "aWins": 1,
             "games": 2
           },
           {
             "seed": 5501,
-            "a": 2.9511,
-            "b": 0.4903,
+            "a": 2.9301,
+            "b": 0.5336,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5603,
-            "a": 1.7374,
-            "b": 1.6838,
+            "a": 1.7261,
+            "b": 1.6857,
             "aWins": 1,
             "games": 2
           },
           {
             "seed": 5701,
-            "a": 1.7496,
-            "b": 1.6354,
+            "a": 1.7445,
+            "b": 1.6839,
             "aWins": 1,
             "games": 2
           },
           {
             "seed": 5807,
-            "a": 1.7572,
-            "b": 1.681,
-            "aWins": 1,
+            "a": 2.9155,
+            "b": 0.5484,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 6501,
-            "a": 2.9027,
-            "b": 0.5918,
-            "aWins": 2,
+            "a": 1.7219,
+            "b": 1.7649,
+            "aWins": 1,
             "games": 2
           },
           {
             "seed": 6603,
-            "a": 2.9009,
-            "b": 0.5954,
-            "aWins": 2,
+            "a": 1.7414,
+            "b": 1.7553,
+            "aWins": 1,
             "games": 2
           },
           {
             "seed": 6709,
-            "a": 2.9196,
-            "b": 0.4451,
-            "aWins": 2,
+            "a": 0.5374,
+            "b": 2.9285,
+            "aWins": 0,
             "games": 2
           },
           {
             "seed": 6803,
-            "a": 2.9225,
-            "b": 0.3931,
+            "a": 2.9086,
+            "b": 0.4873,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 6907,
-            "a": 1.7643,
-            "b": 1.7188,
-            "aWins": 1,
+            "a": 0.5965,
+            "b": 2.8998,
+            "aWins": 0,
             "games": 2
           },
           {
             "seed": 7001,
-            "a": 2.9173,
-            "b": 0.5004,
+            "a": 2.9344,
+            "b": 0.5397,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 7103,
-            "a": 2.9025,
-            "b": 0.5654,
+            "a": 2.9046,
+            "b": 0.5943,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 7207,
-            "a": 1.7782,
-            "b": 0.7112,
-            "aWins": 1,
+            "a": 2.8861,
+            "b": 0.6058,
+            "aWins": 2,
             "games": 2
           }
         ],
         "verdict": "hard stronger",
-        "margin": 1.7438
+        "margin": 0.9186
       },
       {
         "a": "hard",
@@ -598,127 +616,127 @@
           7103,
           7207
         ],
-        "aWins": 31,
-        "bWins": 1,
+        "aWins": 32,
+        "bWins": 0,
         "games": 32,
-        "aScore": 91.17335003927202,
-        "bScore": 18.413268139907775,
+        "aScore": 94.83386645570089,
+        "bScore": 11.448640822660414,
         "perSeed": [
           {
             "seed": 5101,
-            "a": 2.9208,
-            "b": 0.532,
+            "a": 2.9092,
+            "b": 0.4366,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5203,
-            "a": 2.8775,
-            "b": 0.6026,
+            "a": 2.9354,
+            "b": 0.4717,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5309,
-            "a": 2.8921,
-            "b": 0.4934,
+            "a": 2.9804,
+            "b": 0.27,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5407,
-            "a": 2.9181,
-            "b": 0.4827,
+            "a": 2.9721,
+            "b": 0.3459,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5501,
-            "a": 2.9517,
-            "b": 0.4748,
+            "a": 2.9567,
+            "b": 0.3843,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5603,
-            "a": 2.9452,
-            "b": 0.4955,
+            "a": 2.9877,
+            "b": 0.205,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5701,
-            "a": 2.8688,
-            "b": 0.4698,
+            "a": 2.9739,
+            "b": 0.3521,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5807,
-            "a": 2.9385,
-            "b": 0.5125,
+            "a": 2.928,
+            "b": 0.4893,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 6501,
-            "a": 2.918,
-            "b": 0.529,
+            "a": 2.9242,
+            "b": 0.4813,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 6603,
-            "a": 2.9525,
-            "b": 0.5322,
+            "a": 2.957,
+            "b": 0.4274,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 6709,
-            "a": 2.9408,
-            "b": 0.4645,
+            "a": 3.0298,
+            "b": 0.2289,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 6803,
-            "a": 2.903,
-            "b": 0.4385,
+            "a": 2.9407,
+            "b": 0.2792,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 6907,
-            "a": 2.9026,
-            "b": 0.5265,
+            "a": 2.9688,
+            "b": 0.3339,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 7001,
-            "a": 1.8189,
-            "b": 1.6134,
-            "aWins": 1,
+            "a": 3.0265,
+            "b": 0.2712,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 7103,
-            "a": 2.9444,
-            "b": 0.5142,
+            "a": 2.9607,
+            "b": 0.405,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 7207,
-            "a": 2.8937,
-            "b": 0.5248,
+            "a": 2.9657,
+            "b": 0.3428,
             "aWins": 2,
             "games": 2
           }
         ],
         "verdict": "hard stronger",
-        "margin": 2.2738
+        "margin": 2.6058
       },
       {
         "a": "medium",
@@ -741,127 +759,127 @@
           7103,
           7207
         ],
-        "aWins": 21,
-        "bWins": 11,
+        "aWins": 32,
+        "bWins": 0,
         "games": 32,
-        "aScore": 67.68929781323105,
-        "bScore": 43.92236873626333,
+        "aScore": 95.10709802703661,
+        "bScore": 11.004548896526767,
         "perSeed": [
           {
             "seed": 5101,
-            "a": 1.7502,
-            "b": 1.7385,
-            "aWins": 1,
+            "a": 2.9806,
+            "b": 0.3714,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 5203,
-            "a": 1.7486,
-            "b": 1.7498,
-            "aWins": 1,
+            "a": 2.9279,
+            "b": 0.3959,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 5309,
-            "a": 1.7471,
-            "b": 1.7487,
-            "aWins": 1,
+            "a": 2.9915,
+            "b": 0.2917,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 5407,
-            "a": 2.9014,
-            "b": 0.5781,
+            "a": 3.0127,
+            "b": 0.2769,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 5501,
-            "a": 1.7398,
-            "b": 1.7478,
-            "aWins": 1,
+            "a": 2.9038,
+            "b": 0.5447,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 5603,
-            "a": 0.5989,
-            "b": 2.8762,
-            "aWins": 0,
+            "a": 3.0559,
+            "b": 0.1424,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 5701,
-            "a": 1.7748,
-            "b": 1.7218,
-            "aWins": 1,
+            "a": 2.9073,
+            "b": 0.4279,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 5807,
-            "a": 2.9178,
-            "b": 0.5678,
+            "a": 2.9279,
+            "b": 0.3735,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 6501,
-            "a": 1.75,
-            "b": 1.7494,
-            "aWins": 1,
+            "a": 2.911,
+            "b": 0.5158,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 6603,
-            "a": 2.9017,
-            "b": 0.5969,
+            "a": 2.941,
+            "b": 0.4602,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 6709,
-            "a": 1.7726,
-            "b": 1.7214,
-            "aWins": 1,
+            "a": 3.0238,
+            "b": 0.2596,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 6803,
-            "a": 1.7662,
-            "b": 1.6912,
-            "aWins": 1,
+            "a": 2.9951,
+            "b": 0.3023,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 6907,
-            "a": 2.9006,
-            "b": 0.5994,
+            "a": 3.061,
+            "b": 0.1932,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 7001,
-            "a": 1.7491,
-            "b": 1.7031,
-            "aWins": 1,
+            "a": 3.0541,
+            "b": 0.1613,
+            "aWins": 2,
             "games": 2
           },
           {
             "seed": 7103,
-            "a": 2.9256,
-            "b": 0.5729,
+            "a": 2.907,
+            "b": 0.4343,
             "aWins": 2,
             "games": 2
           },
           {
             "seed": 7207,
-            "a": 2.9003,
-            "b": 0.5983,
+            "a": 2.9531,
+            "b": 0.3512,
             "aWins": 2,
             "games": 2
           }
         ],
         "verdict": "medium stronger",
-        "margin": 0.7427
+        "margin": 2.6282
       }
     ],
     "verdicts": [
@@ -878,7 +896,7 @@
       8608
     ],
     "baselineSelfPlay": {
-      "meanScore": 1.7168,
+      "meanScore": 1.7191,
       "wins": 4,
       "games": 8
     },
@@ -889,50 +907,52 @@
       "evaluated": 21
     },
     "chosen": {
-      "id": "weak-18",
-      "source": "weakening search, gen 3",
+      "id": "weak-15",
+      "source": "weakening search, gen 2",
       "params": {
-        "recruitTiles": 28.45334216430783,
-        "infantryShare": 0.5523071488877758,
-        "armorShare": 0.09771113838767632,
-        "buildShare": 0.4687450590264052,
+        "recruitTiles": 24.961720511969176,
+        "infantryShare": 0.7954534638021141,
+        "armorShare": 0.07536619370803238,
+        "buildShare": 0.16224132656469004,
         "roadShare": 0.05,
-        "lineDemand": 2.795110970437527,
+        "lineDemand": 2.274663862884045,
         "advance": 4,
-        "captureRange": 0.9885911217657849
+        "captureRange": 1.2655321023892612,
+        "mergeWound": 0,
+        "splitHunger": 0.8951811118051409
       },
-      "meanScore": 1.189,
-      "winRate": 0.25,
-      "wins": 2,
+      "meanScore": 0.3276,
+      "winRate": 0,
+      "wins": 0,
       "games": 8,
-      "marginVsBaseline": 0.5277,
+      "marginVsBaseline": 1.3915,
       "weakerThanBaseline": true,
       "perSeed": [
         {
           "seed": 8302,
-          "mean": 0.5334,
-          "opponent": 2.9195,
+          "mean": 0.1977,
+          "opponent": 3.0462,
           "wins": 0,
           "games": 2
         },
         {
           "seed": 8404,
-          "mean": 1.862,
-          "opponent": 1.4498,
-          "wins": 1,
+          "mean": 0.1044,
+          "opponent": 3.0783,
+          "wins": 0,
           "games": 2
         },
         {
           "seed": 8506,
-          "mean": 1.7497,
-          "opponent": 1.7474,
-          "wins": 1,
+          "mean": 0.5099,
+          "opponent": 2.9162,
+          "wins": 0,
           "games": 2
         },
         {
           "seed": 8608,
-          "mean": 0.611,
-          "opponent": 2.8757,
+          "mean": 0.4985,
+          "opponent": 2.9169,
           "wins": 0,
           "games": 2
         }
@@ -940,442 +960,52 @@
     },
     "candidates": [
       {
-        "id": "weak-18",
-        "source": "weakening search, gen 3",
-        "params": {
-          "recruitTiles": 28.45334216430783,
-          "infantryShare": 0.5523071488877758,
-          "armorShare": 0.09771113838767632,
-          "buildShare": 0.4687450590264052,
-          "roadShare": 0.05,
-          "lineDemand": 2.795110970437527,
-          "advance": 4,
-          "captureRange": 0.9885911217657849
-        },
-        "meanScore": 1.189,
-        "opponentMean": 2.2481,
-        "wins": 2,
-        "games": 8,
-        "winRate": 0.25,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 0.5334,
-            "opponent": 2.9195,
-            "wins": 0,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 1.862,
-            "opponent": 1.4498,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 1.7497,
-            "opponent": 1.7474,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 0.611,
-            "opponent": 2.8757,
-            "wins": 0,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-12",
+        "id": "weak-15",
         "source": "weakening search, gen 2",
         "params": {
-          "recruitTiles": 28.618212014436722,
-          "infantryShare": 0.685309586119838,
-          "armorShare": 0.1929737989092245,
-          "buildShare": 0.5828533497173338,
-          "roadShare": 0.19457666667178275,
-          "lineDemand": 1.5772045873105522,
-          "advance": 5.9363061035983264,
-          "captureRange": 1.350512478966266
-        },
-        "meanScore": 2.0088,
-        "opponentMean": 1.4396,
-        "wins": 5,
-        "games": 8,
-        "winRate": 0.625,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 1.7333,
-            "opponent": 1.685,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 1.6275,
-            "opponent": 1.7659,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 1.7731,
-            "opponent": 1.7174,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 2.9014,
-            "opponent": 0.5901,
-            "wins": 2,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-17",
-        "source": "weakening search, gen 3",
-        "params": {
-          "recruitTiles": 29.49780077934265,
-          "infantryShare": 0.666530369319953,
-          "armorShare": 0.22690391265321516,
-          "buildShare": 0.5828533497173338,
-          "roadShare": 0.26714665028266615,
-          "lineDemand": 1.5772045873105522,
-          "advance": 4,
-          "captureRange": 1.4680159819079563
-        },
-        "meanScore": 2.0206,
-        "opponentMean": 1.4319,
-        "wins": 5,
-        "games": 8,
-        "winRate": 0.625,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 1.6321,
-            "opponent": 1.7702,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 1.7729,
-            "opponent": 1.6885,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 2.9266,
-            "opponent": 0.5719,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 1.7506,
-            "opponent": 1.6971,
-            "wins": 1,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-20",
-        "source": "weakening search, gen 3",
-        "params": {
-          "recruitTiles": 35.17042499557137,
-          "infantryShare": 0.6385469295596704,
-          "armorShare": 0.15813817997928703,
-          "buildShare": 0.45362848883494733,
-          "roadShare": 0.07982130926102401,
-          "lineDemand": 1.5317875586450098,
-          "advance": 5.293178293388337,
-          "captureRange": 1.1645127081312239
-        },
-        "meanScore": 2.0295,
-        "opponentMean": 1.4155,
-        "wins": 5,
-        "games": 8,
-        "winRate": 0.625,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 2.9271,
-            "opponent": 0.5145,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 1.6408,
-            "opponent": 1.7643,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 0.5784,
-            "opponent": 2.9015,
-            "wins": 0,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 2.9717,
-            "opponent": 0.4818,
-            "wins": 2,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-13",
-        "source": "weakening search, gen 2",
-        "params": {
-          "recruitTiles": 36.49733506441116,
-          "infantryShare": 0.7108568405313417,
-          "armorShare": 0.19639715022174642,
-          "buildShare": 0.4687450590264052,
+          "recruitTiles": 24.961720511969176,
+          "infantryShare": 0.7954534638021141,
+          "armorShare": 0.07536619370803238,
+          "buildShare": 0.16224132656469004,
           "roadShare": 0.05,
-          "lineDemand": 2.8347024467587474,
+          "lineDemand": 2.274663862884045,
           "advance": 4,
-          "captureRange": 0.8101021150825545
+          "captureRange": 1.2655321023892612,
+          "mergeWound": 0,
+          "splitHunger": 0.8951811118051409
         },
-        "meanScore": 2.0312,
-        "opponentMean": 1.1933,
-        "wins": 5,
+        "meanScore": 0.3276,
+        "opponentMean": 2.9894,
+        "wins": 0,
         "games": 8,
-        "winRate": 0.625,
+        "winRate": 0,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 1.6997,
-            "opponent": 1.7719,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 2.9007,
-            "opponent": 0.5976,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 1.8663,
-            "opponent": 0.6286,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 1.6582,
-            "opponent": 1.7749,
-            "wins": 1,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-6",
-        "source": "weakening search, gen 1",
-        "params": {
-          "recruitTiles": 29.49780077934265,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.19639715022174642,
-          "buildShare": 0.6588184840884059,
-          "roadShare": 0.14886147886281836,
-          "lineDemand": 2.8347024467587474,
-          "advance": 5.097156160976738,
-          "captureRange": 1.1730755808530375
-        },
-        "meanScore": 2.0333,
-        "opponentMean": 1.4296,
-        "wins": 5,
-        "games": 8,
-        "winRate": 0.625,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 1.7562,
-            "opponent": 1.7027,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 0.5585,
-            "opponent": 2.903,
-            "wins": 0,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 2.9028,
-            "opponent": 0.5968,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 2.9157,
-            "opponent": 0.5157,
-            "wins": 2,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-4",
-        "source": "weakening search, gen 1",
-        "params": {
-          "recruitTiles": 28.22915250584483,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.26854130862746384,
-          "buildShare": 0.5747575685661286,
-          "roadShare": 0.15733526542782786,
-          "lineDemand": 1.5317875586450098,
-          "advance": 5.293178293388337,
-          "captureRange": 1.1645127081312239
-        },
-        "meanScore": 2.0339,
-        "opponentMean": 1.3549,
-        "wins": 5,
-        "games": 8,
-        "winRate": 0.625,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 2.9375,
-            "opponent": 0.3473,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 1.7596,
-            "opponent": 1.5327,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 2.9013,
-            "opponent": 0.5957,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 0.537,
-            "opponent": 2.9439,
-            "wins": 0,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-9",
-        "source": "weakening search, gen 1",
-        "params": {
-          "recruitTiles": 18.894379950035365,
-          "infantryShare": 0.6016435867687687,
-          "armorShare": 0.279306003570091,
-          "buildShare": 0.7,
-          "roadShare": 0.05,
-          "lineDemand": 2.826315831243992,
-          "advance": 10.734143775654957,
-          "captureRange": 0.8445015630451962
-        },
-        "meanScore": 2.276,
-        "opponentMean": 1.1468,
-        "wins": 6,
-        "games": 8,
-        "winRate": 0.75,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 1.5304,
-            "opponent": 1.8239,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 2.9466,
-            "opponent": 0.4479,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 2.8759,
-            "opponent": 0.6239,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 1.7511,
-            "opponent": 1.6913,
-            "wins": 1,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-8",
-        "source": "weakening search, gen 1",
-        "params": {
-          "recruitTiles": 28.618212014436722,
-          "infantryShare": 0.685309586119838,
-          "armorShare": 0.2646904138801619,
-          "buildShare": 0.7,
-          "roadShare": 0.15000000000000002,
-          "lineDemand": 2.037470778673887,
-          "advance": 5.9363061035983264,
-          "captureRange": 1.350512478966266
-        },
-        "meanScore": 2.2762,
-        "opponentMean": 1.1259,
-        "wins": 6,
-        "games": 8,
-        "winRate": 0.75,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 0.3755,
-            "opponent": 3.0045,
+            "mean": 0.1977,
+            "opponent": 3.0462,
             "wins": 0,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 2.9266,
-            "opponent": 0.4182,
-            "wins": 2,
+            "mean": 0.1044,
+            "opponent": 3.0783,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 2.8756,
-            "opponent": 0.6093,
-            "wins": 2,
+            "mean": 0.5099,
+            "opponent": 2.9162,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 2.927,
-            "opponent": 0.4714,
-            "wins": 2,
+            "mean": 0.4985,
+            "opponent": 2.9169,
+            "wins": 0,
             "games": 2
           }
         ]
@@ -1384,46 +1014,303 @@
         "id": "weak-19",
         "source": "weakening search, gen 3",
         "params": {
-          "recruitTiles": 30.82401037216186,
-          "infantryShare": 0.7108568405313417,
-          "armorShare": 0.19639715022174642,
-          "buildShare": 0.5747575685661286,
-          "roadShare": 0.22957167685031893,
-          "lineDemand": 3.031016549766064,
-          "advance": 9.163601737003773,
-          "captureRange": 0.8101021150825545
+          "recruitTiles": 25.77218775693327,
+          "infantryShare": 0.7335510465595871,
+          "armorShare": 0.05,
+          "buildShare": 0.20533083878806785,
+          "roadShare": 0.20568900687620045,
+          "lineDemand": 1.9712730159610508,
+          "advance": 4,
+          "captureRange": 1.2074719409924002,
+          "mergeWound": 0,
+          "splitHunger": 1
         },
-        "meanScore": 2.2988,
-        "opponentMean": 1.1629,
-        "wins": 6,
+        "meanScore": 0.3653,
+        "opponentMean": 2.9707,
+        "wins": 0,
         "games": 8,
-        "winRate": 0.75,
+        "winRate": 0,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 2.8925,
-            "opponent": 0.5351,
-            "wins": 2,
+            "mean": 0.2596,
+            "opponent": 3.0103,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 1.7508,
-            "opponent": 1.7432,
-            "wins": 1,
+            "mean": 0.291,
+            "opponent": 2.9858,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 2.9022,
-            "opponent": 0.5868,
-            "wins": 2,
+            "mean": 0.4876,
+            "opponent": 2.9138,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 1.6498,
-            "opponent": 1.7865,
+            "mean": 0.423,
+            "opponent": 2.9728,
+            "wins": 0,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-14",
+        "source": "weakening search, gen 2",
+        "params": {
+          "recruitTiles": 22.827307367231697,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.05,
+          "buildShare": 0.3983250345569104,
+          "roadShare": 0.11521577497478577,
+          "lineDemand": 1.0225739869475365,
+          "advance": 6.45145919919014,
+          "captureRange": 1.0673694086726755,
+          "mergeWound": 0,
+          "splitHunger": 0.5855903359130025
+        },
+        "meanScore": 0.3893,
+        "opponentMean": 2.9578,
+        "wins": 0,
+        "games": 8,
+        "winRate": 0,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 0.2766,
+            "opponent": 2.9984,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 0.1539,
+            "opponent": 3.0363,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 0.5765,
+            "opponent": 2.8973,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 0.5502,
+            "opponent": 2.899,
+            "wins": 0,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-4",
+        "source": "weakening search, gen 1",
+        "params": {
+          "recruitTiles": 21.856927633937445,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.05,
+          "buildShare": 0.3738639464450534,
+          "roadShare": 0.05,
+          "lineDemand": 2.3415732726454737,
+          "advance": 5.08478574315086,
+          "captureRange": 1.1225571382325144,
+          "mergeWound": 0,
+          "splitHunger": 0.8573911860585213
+        },
+        "meanScore": 0.4745,
+        "opponentMean": 2.9232,
+        "wins": 0,
+        "games": 8,
+        "winRate": 0,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 0.4103,
+            "opponent": 2.9645,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 0.3375,
+            "opponent": 2.9678,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 0.6094,
+            "opponent": 2.8872,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 0.5406,
+            "opponent": 2.8735,
+            "wins": 0,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-13",
+        "source": "weakening search, gen 2",
+        "params": {
+          "recruitTiles": 15.191603627707808,
+          "infantryShare": 0.6652870971057564,
+          "armorShare": 0.054767657443880985,
+          "buildShare": 0.4443629482761025,
+          "roadShare": 0.11521577497478577,
+          "lineDemand": 1.0225739869475365,
+          "advance": 6.720644662622362,
+          "captureRange": 0.6,
+          "mergeWound": 0.03706797486171127,
+          "splitHunger": 0.4023089254274964
+        },
+        "meanScore": 0.7307,
+        "opponentMean": 2.6326,
+        "wins": 1,
+        "games": 8,
+        "winRate": 0.125,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 1.6526,
+            "opponent": 1.6794,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 0.1964,
+            "opponent": 3.0575,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 0.4965,
+            "opponent": 2.9348,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 0.5772,
+            "opponent": 2.8587,
+            "wins": 0,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-18",
+        "source": "weakening search, gen 3",
+        "params": {
+          "recruitTiles": 16.492816851940006,
+          "infantryShare": 0.5132016093749553,
+          "armorShare": 0.12292732137255372,
+          "buildShare": 0.4443629482761025,
+          "roadShare": 0.10799784808885309,
+          "lineDemand": 1.0225739869475365,
+          "advance": 9.238314675167203,
+          "captureRange": 0.9673607058357447,
+          "mergeWound": 0,
+          "splitHunger": 0.5855903359130025
+        },
+        "meanScore": 0.7805,
+        "opponentMean": 2.6282,
+        "wins": 1,
+        "games": 8,
+        "winRate": 0.125,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 1.7181,
+            "opponent": 1.7447,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 0.2946,
+            "opponent": 2.9785,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 0.5784,
+            "opponent": 2.8809,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 0.5309,
+            "opponent": 2.9088,
+            "wins": 0,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-17",
+        "source": "weakening search, gen 3",
+        "params": {
+          "recruitTiles": 22.827307367231697,
+          "infantryShare": 0.6652870971057564,
+          "armorShare": 0.054767657443880985,
+          "buildShare": 0.43077235795557495,
+          "roadShare": 0.11521577497478577,
+          "lineDemand": 1.528754386007786,
+          "advance": 6.720644662622362,
+          "captureRange": 1.0037698303814977,
+          "mergeWound": 0,
+          "splitHunger": 0.5855903359130025
+        },
+        "meanScore": 0.7841,
+        "opponentMean": 2.3741,
+        "wins": 1,
+        "games": 8,
+        "winRate": 0.125,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 0.4883,
+            "opponent": 2.9203,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 0.2171,
+            "opponent": 3.0261,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 0.5973,
+            "opponent": 2.8868,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 1.8335,
+            "opponent": 0.6633,
             "wins": 1,
             "games": 2
           }
@@ -1433,47 +1320,100 @@
         "id": "weak-10",
         "source": "weakening search, gen 1",
         "params": {
-          "recruitTiles": 14.22516708197072,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.26854130862746384,
-          "buildShare": 0.7,
-          "roadShare": 0.05,
-          "lineDemand": 1.8746042475104332,
-          "advance": 7.824816624401137,
-          "captureRange": 0.8669311839155853
+          "recruitTiles": 21.274905350990593,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.14994326761923726,
+          "buildShare": 0.5667128225788474,
+          "roadShare": 0.14085756624117496,
+          "lineDemand": 1.1001732405275104,
+          "advance": 4.378972726408392,
+          "captureRange": 0.6217101441463455,
+          "mergeWound": 0,
+          "splitHunger": 0.8016443765256553
         },
-        "meanScore": 2.3125,
-        "opponentMean": 1.1269,
-        "wins": 6,
+        "meanScore": 1.448,
+        "opponentMean": 1.9988,
+        "wins": 3,
         "games": 8,
-        "winRate": 0.75,
+        "winRate": 0.375,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 2.9268,
-            "opponent": 0.4952,
-            "wins": 2,
+            "mean": 1.7059,
+            "opponent": 1.6898,
+            "wins": 1,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 1.7316,
-            "opponent": 1.6377,
-            "wins": 1,
+            "mean": 0.536,
+            "opponent": 2.9319,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 2.8508,
-            "opponent": 0.6333,
-            "wins": 2,
+            "mean": 1.7673,
+            "opponent": 1.731,
+            "wins": 1,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 1.7408,
-            "opponent": 1.7414,
+            "mean": 1.7826,
+            "opponent": 1.6424,
             "wins": 1,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-8",
+        "source": "weakening search, gen 1",
+        "params": {
+          "recruitTiles": 30.130992584861815,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.14561294989660378,
+          "buildShare": 0.3983250345569104,
+          "roadShare": 0.08551222851499918,
+          "lineDemand": 2.4129601695388554,
+          "advance": 4,
+          "captureRange": 0.9992865143110976,
+          "mergeWound": 0,
+          "splitHunger": 1
+        },
+        "meanScore": 1.4719,
+        "opponentMean": 1.4918,
+        "wins": 3,
+        "games": 8,
+        "winRate": 0.375,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 1.7192,
+            "opponent": 1.7064,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 0.518,
+            "opponent": 2.9332,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 0.7535,
+            "opponent": 0.7465,
+            "wins": 0,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 2.897,
+            "opponent": 0.5809,
+            "wins": 2,
             "games": 2
           }
         ]
@@ -1482,145 +1422,49 @@
         "id": "weak-11",
         "source": "weakening search, gen 1",
         "params": {
-          "recruitTiles": 22.636015109717846,
-          "infantryShare": 0.6793844557413832,
-          "armorShare": 0.25031580184120683,
-          "buildShare": 0.4405513863428495,
-          "roadShare": 0.14886147886281836,
-          "lineDemand": 1.5317875586450098,
-          "advance": 6.4212732701562345,
-          "captureRange": 1.2247627661563456
+          "recruitTiles": 22.827307367231697,
+          "infantryShare": 0.6652870971057564,
+          "armorShare": 0.05,
+          "buildShare": 0.7,
+          "roadShare": 0.11521577497478577,
+          "lineDemand": 1.0225739869475365,
+          "advance": 7.3858998087234795,
+          "captureRange": 1.0673694086726755,
+          "mergeWound": 0,
+          "splitHunger": 0.6248915487900376
         },
-        "meanScore": 2.3126,
-        "opponentMean": 1.1103,
-        "wins": 6,
+        "meanScore": 1.6859,
+        "opponentMean": 1.4928,
+        "wins": 4,
         "games": 8,
-        "winRate": 0.75,
+        "winRate": 0.5,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 1.5946,
-            "opponent": 1.7311,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 2.9767,
-            "opponent": 0.4264,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 2.9261,
-            "opponent": 0.5739,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 1.753,
-            "opponent": 1.7095,
-            "wins": 1,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-1",
-        "source": "weakest sampled archive member #1 (gen 6, training fitness 0.9046)",
-        "params": {
-          "recruitTiles": 28.618212014436722,
-          "infantryShare": 0.7171763554261997,
-          "armorShare": 0.23282364457380023,
-          "buildShare": 0.6358215401764027,
-          "roadShare": 0.14886147886281836,
-          "lineDemand": 1.5317875586450098,
-          "advance": 6.4212732701562345,
-          "captureRange": 1.2247627661563456
-        },
-        "meanScore": 2.3232,
-        "opponentMean": 1.0963,
-        "wins": 6,
-        "games": 8,
-        "winRate": 0.75,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 2.9864,
-            "opponent": 0.2924,
+            "mean": 2.9298,
+            "opponent": 0.5142,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 0.4889,
-            "opponent": 2.9519,
+            "mean": 0.2323,
+            "opponent": 3.0607,
             "wins": 0,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 2.9013,
-            "opponent": 0.5746,
-            "wins": 2,
+            "mean": 0.6769,
+            "opponent": 1.8092,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 2.9161,
-            "opponent": 0.5663,
+            "mean": 2.9045,
+            "opponent": 0.5871,
             "wins": 2,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-16",
-        "source": "weakening search, gen 2",
-        "params": {
-          "recruitTiles": 14.22516708197072,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.26854130862746384,
-          "buildShare": 0.5283343082107603,
-          "roadShare": 0.14148710489273073,
-          "lineDemand": 1.5317875586450098,
-          "advance": 7.824816624401137,
-          "captureRange": 1.1521121661178768
-        },
-        "meanScore": 2.3403,
-        "opponentMean": 1.0898,
-        "wins": 6,
-        "games": 8,
-        "winRate": 0.75,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 2.9356,
-            "opponent": 0.4493,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 1.7422,
-            "opponent": 1.7115,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 2.9195,
-            "opponent": 0.5477,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 1.7639,
-            "opponent": 1.6506,
-            "wins": 1,
             "games": 2
           }
         ]
@@ -1629,193 +1473,303 @@
         "id": "weak-21",
         "source": "weakening search, gen 3",
         "params": {
-          "recruitTiles": 29.49780077934265,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.19198480732273304,
-          "buildShare": 0.6199987681675702,
-          "roadShare": 0.0597050294070505,
-          "lineDemand": 2.826315831243992,
-          "advance": 4,
-          "captureRange": 0.8445015630451962
+          "recruitTiles": 17.130710288323463,
+          "infantryShare": 0.6048353918176144,
+          "armorShare": 0.12459578848443921,
+          "buildShare": 0.6602647266443818,
+          "roadShare": 0.05,
+          "lineDemand": 0.8,
+          "advance": 6.720644662622362,
+          "captureRange": 0.6,
+          "mergeWound": 0,
+          "splitHunger": 1
         },
-        "meanScore": 2.3416,
-        "opponentMean": 1.1178,
-        "wins": 6,
+        "meanScore": 1.7209,
+        "opponentMean": 1.7347,
+        "wins": 4,
         "games": 8,
-        "winRate": 0.75,
+        "winRate": 0.5,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 1.7621,
-            "opponent": 1.6409,
-            "wins": 1,
+            "mean": 0.4981,
+            "opponent": 2.9474,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 2.927,
-            "opponent": 0.5526,
+            "mean": 2.9264,
+            "opponent": 0.4967,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 2.8756,
-            "opponent": 0.6197,
-            "wins": 2,
+            "mean": 1.7158,
+            "opponent": 1.7488,
+            "wins": 1,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 1.8017,
-            "opponent": 1.658,
+            "mean": 1.7431,
+            "opponent": 1.7459,
             "wins": 1,
             "games": 2
           }
         ]
       },
       {
-        "id": "weak-2",
-        "source": "weakest sampled archive member #2 (gen 6, training fitness 0.9085)",
+        "id": "weak-20",
+        "source": "weakening search, gen 3",
         "params": {
-          "recruitTiles": 24.986945394892246,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.19639715022174642,
-          "buildShare": 0.7,
-          "roadShare": 0.15000000000000002,
-          "lineDemand": 1.8746042475104332,
-          "advance": 7.824816624401137,
-          "captureRange": 1.1952345919562504
+          "recruitTiles": 24.961720511969176,
+          "infantryShare": 0.85,
+          "armorShare": 0.07536619370803238,
+          "buildShare": 0.4506938975024968,
+          "roadShare": 0.1843843695893884,
+          "lineDemand": 0.8,
+          "advance": 6.29883992113173,
+          "captureRange": 1.1762484803330153,
+          "mergeWound": 0,
+          "splitHunger": 0.8951811118051409
         },
-        "meanScore": 2.3535,
-        "opponentMean": 1.0901,
-        "wins": 6,
+        "meanScore": 1.7462,
+        "opponentMean": 1.7079,
+        "wins": 4,
         "games": 8,
-        "winRate": 0.75,
+        "winRate": 0.5,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 2.9657,
-            "opponent": 0.4159,
+            "mean": 2.9085,
+            "opponent": 0.4946,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 1.7481,
-            "opponent": 1.7272,
-            "wins": 1,
+            "mean": 0.5759,
+            "opponent": 2.9081,
+            "wins": 0,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 1.773,
-            "opponent": 1.7243,
+            "mean": 1.7466,
+            "opponent": 1.7496,
             "wins": 1,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 2.9274,
-            "opponent": 0.493,
-            "wins": 2,
+            "mean": 1.7536,
+            "opponent": 1.6793,
+            "wins": 1,
             "games": 2
           }
         ]
       },
       {
-        "id": "weak-14",
-        "source": "weakening search, gen 2",
+        "id": "weak-1",
+        "source": "weakest sampled archive member #1 (gen 6, training fitness 0.646)",
         "params": {
-          "recruitTiles": 28.91539874048904,
-          "infantryShare": 0.6620445861062035,
-          "armorShare": 0.2879554138937964,
-          "buildShare": 0.7,
-          "roadShare": 0.15000000000000002,
-          "lineDemand": 2.5219442430138588,
-          "advance": 12.781776188639924,
-          "captureRange": 1.1269816962070762
+          "recruitTiles": 30.130992584861815,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.14994326761923726,
+          "buildShare": 0.5667128225788474,
+          "roadShare": 0.14085756624117496,
+          "lineDemand": 1.8001183953136204,
+          "advance": 5.08478574315086,
+          "captureRange": 0.9188983089989051,
+          "mergeWound": 0,
+          "splitHunger": 0.9593296844977885
         },
-        "meanScore": 2.3701,
-        "opponentMean": 1.0543,
-        "wins": 6,
+        "meanScore": 2.0469,
+        "opponentMean": 1.3759,
+        "wins": 5,
         "games": 8,
-        "winRate": 0.75,
+        "winRate": 0.625,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 1.7866,
-            "opponent": 1.5915,
+            "mean": 1.7281,
+            "opponent": 1.674,
             "wins": 1,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 1.7732,
-            "opponent": 1.6796,
-            "wins": 1,
+            "mean": 2.9723,
+            "opponent": 0.3351,
+            "wins": 2,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 2.9009,
-            "opponent": 0.5968,
-            "wins": 2,
+            "mean": 1.7478,
+            "opponent": 1.7481,
+            "wins": 1,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 3.0198,
-            "opponent": 0.3493,
-            "wins": 2,
+            "mean": 1.7395,
+            "opponent": 1.7462,
+            "wins": 1,
             "games": 2
           }
         ]
       },
       {
-        "id": "weak-5",
+        "id": "weak-9",
         "source": "weakening search, gen 1",
         "params": {
-          "recruitTiles": 24.986945394892246,
-          "infantryShare": 0.647110356814228,
-          "armorShare": 0.19639715022174642,
-          "buildShare": 0.7,
-          "roadShare": 0.15000000000000002,
-          "lineDemand": 2.6508008870482445,
-          "advance": 6.216084589017555,
-          "captureRange": 1.1952345919562504
+          "recruitTiles": 30.130992584861815,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.13229285725392398,
+          "buildShare": 0.5648196814768016,
+          "roadShare": 0.05716569866985084,
+          "lineDemand": 2.9938162203878163,
+          "advance": 4.94333901302889,
+          "captureRange": 0.9188983089989051,
+          "mergeWound": 0,
+          "splitHunger": 0.6438921740744263
         },
-        "meanScore": 2.6069,
-        "opponentMean": 0.8688,
-        "wins": 7,
+        "meanScore": 2.0543,
+        "opponentMean": 1.1242,
+        "wins": 5,
         "games": 8,
-        "winRate": 0.875,
+        "winRate": 0.625,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 1.6713,
-            "opponent": 1.7591,
+            "mean": 1.651,
+            "opponent": 1.7647,
             "wins": 1,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 2.9262,
-            "opponent": 0.5526,
+            "mean": 2.978,
+            "opponent": 0.369,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 2.9011,
-            "opponent": 0.5972,
+            "mean": 1.7501,
+            "opponent": 1.7385,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 1.8379,
+            "opponent": 0.6248,
+            "wins": 1,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-12",
+        "source": "weakening search, gen 2",
+        "params": {
+          "recruitTiles": 28.125768631603567,
+          "infantryShare": 0.708852900872007,
+          "armorShare": 0.11370424150489272,
+          "buildShare": 0.7,
+          "roadShare": 0.13979337697383018,
+          "lineDemand": 3.351222322881222,
+          "advance": 8.432923986110836,
+          "captureRange": 1.0963659369852394,
+          "mergeWound": 0,
+          "splitHunger": 0.2619941186159849
+        },
+        "meanScore": 2.0582,
+        "opponentMean": 1.1339,
+        "wins": 5,
+        "games": 8,
+        "winRate": 0.625,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 1.7901,
+            "opponent": 1.6399,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 1.7706,
+            "opponent": 1.607,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 1.8189,
+            "opponent": 0.6797,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 2.8535,
+            "opponent": 0.6088,
+            "wins": 2,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-3",
+        "source": "weakest sampled archive member #3 (gen 4, training fitness 0.926)",
+        "params": {
+          "recruitTiles": 31.864237201865762,
+          "infantryShare": 0.8000567323807627,
+          "armorShare": 0.14549668683437628,
+          "buildShare": 0.573499352618819,
+          "roadShare": 0.0841282348847017,
+          "lineDemand": 1.3294562324881554,
+          "advance": 5.08478574315086,
+          "captureRange": 1.0673694086726755,
+          "mergeWound": 0,
+          "splitHunger": 1
+        },
+        "meanScore": 2.3162,
+        "opponentMean": 1.1119,
+        "wins": 6,
+        "games": 8,
+        "winRate": 0.75,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 1.7346,
+            "opponent": 1.6201,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 1.7084,
+            "opponent": 1.6917,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 2.9219,
+            "opponent": 0.5778,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 2.9289,
-            "opponent": 0.5666,
+            "mean": 2.9001,
+            "opponent": 0.5579,
             "wins": 2,
             "games": 2
           }
@@ -1825,145 +1779,253 @@
         "id": "weak-7",
         "source": "weakening search, gen 1",
         "params": {
-          "recruitTiles": 24.986945394892246,
+          "recruitTiles": 30.130992584861815,
+          "infantryShare": 0.7812775155808777,
+          "armorShare": 0.1687224844191223,
+          "buildShare": 0.5667128225788474,
+          "roadShare": 0.2453793835267425,
+          "lineDemand": 1.8001183953136204,
+          "advance": 4,
+          "captureRange": 1.213838710053824,
+          "mergeWound": 0,
+          "splitHunger": 1
+        },
+        "meanScore": 2.3176,
+        "opponentMean": 0.8861,
+        "wins": 6,
+        "games": 8,
+        "winRate": 0.75,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 1.726,
+            "opponent": 1.6122,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 2.916,
+            "opponent": 0.5687,
+            "wins": 2,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 2.8505,
+            "opponent": 0.6489,
+            "wins": 2,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 1.7779,
+            "opponent": 0.7146,
+            "wins": 1,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-2",
+        "source": "weakest sampled archive member #2 (gen 1, training fitness 0.897)",
+        "params": {
+          "recruitTiles": 17.68428778182715,
+          "infantryShare": 0.6237944553187117,
+          "armorShare": 0.14994326761923726,
+          "buildShare": 0.6468989459448493,
+          "roadShare": 0.19124771005008373,
+          "lineDemand": 0.8,
+          "advance": 14,
+          "captureRange": 1.0591338275698945,
+          "mergeWound": 0,
+          "splitHunger": 1
+        },
+        "meanScore": 2.3192,
+        "opponentMean": 1.1125,
+        "wins": 6,
+        "games": 8,
+        "winRate": 0.75,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 1.7521,
+            "opponent": 1.6599,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 2.9064,
+            "opponent": 0.474,
+            "wins": 2,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 2.9219,
+            "opponent": 0.5762,
+            "wins": 2,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 1.6966,
+            "opponent": 1.74,
+            "wins": 1,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-5",
+        "source": "weakening search, gen 1",
+        "params": {
+          "recruitTiles": 30.81336886798963,
           "infantryShare": 0.85,
           "armorShare": 0.09999999999999998,
-          "buildShare": 0.5699741432908922,
-          "roadShare": 0.08410485506057741,
-          "lineDemand": 2.5479624751210213,
-          "advance": 5.199911738513038,
-          "captureRange": 1.1429973019985482
+          "buildShare": 0.7,
+          "roadShare": 0.07929829839617017,
+          "lineDemand": 2.881247715577483,
+          "advance": 5.08478574315086,
+          "captureRange": 1.0673694086726755,
+          "mergeWound": 0.18885435350239277,
+          "splitHunger": 0.7332131568808109
         },
-        "meanScore": 2.6376,
-        "opponentMean": 0.813,
-        "wins": 7,
+        "meanScore": 2.3345,
+        "opponentMean": 1.0789,
+        "wins": 6,
         "games": 8,
-        "winRate": 0.875,
+        "winRate": 0.75,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 2.9536,
-            "opponent": 0.5072,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 2.9454,
-            "opponent": 0.4214,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 1.751,
-            "opponent": 1.7488,
+            "mean": 1.7177,
+            "opponent": 1.6866,
             "wins": 1,
             "games": 2
           },
           {
+            "seed": 8404,
+            "mean": 1.7951,
+            "opponent": 1.5428,
+            "wins": 1,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 2.9223,
+            "opponent": 0.573,
+            "wins": 2,
+            "games": 2
+          },
+          {
             "seed": 8608,
-            "mean": 2.9005,
-            "opponent": 0.5746,
+            "mean": 2.9029,
+            "opponent": 0.5133,
             "wins": 2,
             "games": 2
           }
         ]
       },
       {
-        "id": "weak-3",
-        "source": "weakest sampled archive member #3 (gen 4, training fitness 0.9229)",
-        "params": {
-          "recruitTiles": 23.602787552401423,
-          "infantryShare": 0.7834523181128316,
-          "armorShare": 0.1665476818871684,
-          "buildShare": 0.6552303983073215,
-          "roadShare": 0.18822183895390482,
-          "lineDemand": 1.2668245445936919,
-          "advance": 11.30047924327664,
-          "captureRange": 0.9013070209184662
-        },
-        "meanScore": 2.6661,
-        "opponentMean": 0.7516,
-        "wins": 7,
-        "games": 8,
-        "winRate": 0.875,
-        "perSeed": [
-          {
-            "seed": 8302,
-            "mean": 2.9723,
-            "opponent": 0.3399,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8404,
-            "mean": 1.7946,
-            "opponent": 1.6388,
-            "wins": 1,
-            "games": 2
-          },
-          {
-            "seed": 8506,
-            "mean": 2.9516,
-            "opponent": 0.5221,
-            "wins": 2,
-            "games": 2
-          },
-          {
-            "seed": 8608,
-            "mean": 2.9458,
-            "opponent": 0.5057,
-            "wins": 2,
-            "games": 2
-          }
-        ]
-      },
-      {
-        "id": "weak-15",
+        "id": "weak-16",
         "source": "weakening search, gen 2",
         "params": {
-          "recruitTiles": 18.894379950035365,
-          "infantryShare": 0.6814586913725361,
-          "armorShare": 0.26854130862746384,
-          "buildShare": 0.5756359098106623,
-          "roadShare": 0.10128244575113059,
-          "lineDemand": 3.7444508466124535,
-          "advance": 14,
-          "captureRange": 0.7296900379471482
+          "recruitTiles": 14.76826356044039,
+          "infantryShare": 0.7574289658386261,
+          "armorShare": 0.05,
+          "buildShare": 0.7,
+          "roadShare": 0.11521577497478577,
+          "lineDemand": 2.0409596046805385,
+          "advance": 6.089369858149439,
+          "captureRange": 1.2659265368711203,
+          "mergeWound": 0.10528814530000091,
+          "splitHunger": 0.8566546386107803
         },
-        "meanScore": 2.9135,
-        "opponentMean": 0.5279,
-        "wins": 8,
+        "meanScore": 2.3362,
+        "opponentMean": 1.1011,
+        "wins": 6,
         "games": 8,
-        "winRate": 1,
+        "winRate": 0.75,
         "perSeed": [
           {
             "seed": 8302,
-            "mean": 2.933,
-            "opponent": 0.3983,
-            "wins": 2,
+            "mean": 1.7151,
+            "opponent": 1.7723,
+            "wins": 1,
             "games": 2
           },
           {
             "seed": 8404,
-            "mean": 2.9197,
-            "opponent": 0.5481,
+            "mean": 2.9999,
+            "opponent": 0.3367,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 8506,
-            "mean": 2.9011,
-            "opponent": 0.5971,
+            "mean": 2.8871,
+            "opponent": 0.5777,
             "wins": 2,
             "games": 2
           },
           {
             "seed": 8608,
-            "mean": 2.9001,
-            "opponent": 0.5682,
+            "mean": 1.7429,
+            "opponent": 1.7177,
+            "wins": 1,
+            "games": 2
+          }
+        ]
+      },
+      {
+        "id": "weak-6",
+        "source": "weakening search, gen 1",
+        "params": {
+          "recruitTiles": 19.634438080526888,
+          "infantryShare": 0.7914331339579076,
+          "armorShare": 0.14549668683437628,
+          "buildShare": 0.7,
+          "roadShare": 0.14085756624117496,
+          "lineDemand": 2.6048053403943774,
+          "advance": 4.240726463962346,
+          "captureRange": 1.0145422068890184,
+          "mergeWound": 0,
+          "splitHunger": 1
+        },
+        "meanScore": 2.6386,
+        "opponentMean": 0.7838,
+        "wins": 7,
+        "games": 8,
+        "winRate": 0.875,
+        "perSeed": [
+          {
+            "seed": 8302,
+            "mean": 2.8979,
+            "opponent": 0.5636,
             "wins": 2,
+            "games": 2
+          },
+          {
+            "seed": 8404,
+            "mean": 3.0029,
+            "opponent": 0.301,
+            "wins": 2,
+            "games": 2
+          },
+          {
+            "seed": 8506,
+            "mean": 2.87,
+            "opponent": 0.5913,
+            "wins": 2,
+            "games": 2
+          },
+          {
+            "seed": 8608,
+            "mean": 1.7834,
+            "opponent": 1.6793,
+            "wins": 1,
             "games": 2
           }
         ]
@@ -1973,256 +2035,265 @@
   "history": [
     {
       "gen": 1,
-      "best": 2.5391,
-      "mean": 1.7267,
-      "worst": 0.939,
-      "wins": 36,
+      "best": 2.1979,
+      "mean": 1.6953,
+      "worst": 0.897,
+      "wins": 35,
       "games": 72,
-      "ms": 102563
+      "ms": 135336
     },
     {
       "gen": 2,
-      "best": 2.1288,
-      "mean": 1.6952,
-      "worst": 1.3202,
-      "wins": 35,
+      "best": 2.5265,
+      "mean": 1.6467,
+      "worst": 0.9241,
+      "wins": 33,
       "games": 72,
-      "ms": 110699
+      "ms": 172097
     },
     {
       "gen": 3,
-      "best": 2.1268,
-      "mean": 1.7336,
-      "worst": 1.3193,
-      "wins": 36,
+      "best": 2.1437,
+      "mean": 1.6295,
+      "worst": 1.3382,
+      "wins": 32,
       "games": 72,
-      "ms": 115259
+      "ms": 168607
     },
     {
       "gen": 4,
-      "best": 2.5292,
-      "mean": 1.7314,
-      "worst": 0.9229,
+      "best": 2.5287,
+      "mean": 1.7362,
+      "worst": 0.926,
       "wins": 36,
       "games": 72,
-      "ms": 107079
+      "ms": 137843
     },
     {
       "gen": 5,
-      "best": 2.5259,
-      "mean": 1.7382,
-      "worst": 0.968,
-      "wins": 36,
+      "best": 2.5071,
+      "mean": 1.6459,
+      "worst": 0.9817,
+      "wins": 33,
       "games": 72,
-      "ms": 104818
+      "ms": 169802
     },
     {
       "gen": 6,
-      "best": 2.557,
-      "mean": 1.7285,
-      "worst": 0.9046,
-      "wins": 36,
+      "best": 2.1737,
+      "mean": 1.5653,
+      "worst": 0.646,
+      "wins": 30,
       "games": 72,
-      "ms": 84222
+      "ms": 153602
     }
   ],
   "population": [
     {
       "params": {
-        "recruitTiles": 18.86839158833027,
-        "infantryShare": 0.7192754615144804,
-        "armorShare": 0.23072453848551955,
-        "buildShare": 0.6468989459448493,
-        "roadShare": 0.14085756624117496,
-        "lineDemand": 1.0103768218308686,
-        "advance": 5.108707191888243,
-        "captureRange": 1.2247627661563456
-      },
-      "fitness": 2.557,
-      "wins": 5,
-      "games": 6
-    },
-    {
-      "params": {
-        "recruitTiles": 22.47511393809691,
-        "infantryShare": 0.6237944553187117,
-        "armorShare": 0.32620554468128826,
-        "buildShare": 0.6468989459448493,
-        "roadShare": 0.14085756624117496,
-        "lineDemand": 0.9058072958141564,
-        "advance": 6.4212732701562345,
-        "captureRange": 1.3968678389210254
-      },
-      "fitness": 2.526,
-      "wins": 5,
-      "games": 6
-    },
-    {
-      "params": {
-        "recruitTiles": 29.899492425378412,
-        "infantryShare": 0.6814586913725361,
-        "armorShare": 0.26854130862746384,
-        "buildShare": 0.551368145289598,
-        "roadShare": 0.14085756624117496,
-        "lineDemand": 1.0103768218308686,
-        "advance": 6.4212732701562345,
-        "captureRange": 1.0679317732574418
-      },
-      "fitness": 2.5224,
-      "wins": 5,
-      "games": 6
-    },
-    {
-      "params": {
-        "recruitTiles": 34.040211173240095,
-        "infantryShare": 0.7592812040867284,
-        "armorShare": 0.14994326761923726,
+        "recruitTiles": 36.325833200477064,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.14358323754393493,
         "buildShare": 0.7,
-        "roadShare": 0.15000000000000002,
-        "lineDemand": 2.4184967916458846,
-        "advance": 7.524731813231483,
-        "captureRange": 0.7635962174972519
+        "roadShare": 0.14085756624117496,
+        "lineDemand": 1.697200945392251,
+        "advance": 5.08478574315086,
+        "captureRange": 0.9188983089989051,
+        "mergeWound": 0,
+        "splitHunger": 0.9936269326135516
       },
-      "fitness": 2.0983,
+      "fitness": 2.1737,
       "wins": 4,
       "games": 6
     },
     {
       "params": {
-        "recruitTiles": 28.618212014436722,
-        "infantryShare": 0.6494990700786002,
-        "armorShare": 0.30050092992139976,
+        "recruitTiles": 36.325833200477064,
+        "infantryShare": 0.85,
+        "armorShare": 0.09999999999999998,
         "buildShare": 0.7,
-        "roadShare": 0.14886147886281836,
-        "lineDemand": 1.0103768218308686,
-        "advance": 6.4212732701562345,
-        "captureRange": 1.2247627661563456
+        "roadShare": 0.15000000000000002,
+        "lineDemand": 1.9956878390163184,
+        "advance": 5.256926821079105,
+        "captureRange": 1.0679317732574418,
+        "mergeWound": 0.07423859622795136,
+        "splitHunger": 1
       },
-      "fitness": 1.7363,
+      "fitness": 1.8237,
       "wins": 3,
       "games": 6
     },
     {
       "params": {
-        "recruitTiles": 28.618212014436722,
-        "infantryShare": 0.6494990700786002,
-        "armorShare": 0.30050092992139976,
-        "buildShare": 0.7,
-        "roadShare": 0.14886147886281836,
-        "lineDemand": 1.0103768218308686,
-        "advance": 6.4212732701562345,
-        "captureRange": 1.2247627661563456
-      },
-      "fitness": 1.7349,
-      "wins": 3,
-      "games": 6
-    },
-    {
-      "params": {
-        "recruitTiles": 22.47511393809691,
-        "infantryShare": 0.6237944553187117,
-        "armorShare": 0.32620554468128826,
-        "buildShare": 0.7,
-        "roadShare": 0.0999293119995855,
-        "lineDemand": 0.8,
-        "advance": 14,
-        "captureRange": 1.3968678389210254
-      },
-      "fitness": 1.7309,
-      "wins": 3,
-      "games": 6
-    },
-    {
-      "params": {
-        "recruitTiles": 34.61648653727025,
+        "recruitTiles": 36.325833200477064,
         "infantryShare": 0.8000567323807627,
         "armorShare": 0.14994326761923726,
         "buildShare": 0.7,
-        "roadShare": 0.14885409744456413,
-        "lineDemand": 1.697200945392251,
-        "advance": 14,
-        "captureRange": 0.8938975698547438
+        "roadShare": 0.10316150671569634,
+        "lineDemand": 1.067787069454789,
+        "advance": 4,
+        "captureRange": 0.8938975698547438,
+        "mergeWound": 0,
+        "splitHunger": 0.9936269326135516
       },
-      "fitness": 1.7143,
+      "fitness": 1.794,
       "wins": 3,
       "games": 6
     },
     {
       "params": {
-        "recruitTiles": 17.68428778182715,
-        "infantryShare": 0.6237944553187117,
+        "recruitTiles": 37.61442568292841,
+        "infantryShare": 0.8000567323807627,
         "armorShare": 0.14994326761923726,
-        "buildShare": 0.6468989459448493,
-        "roadShare": 0.19124771005008373,
-        "lineDemand": 0.8,
-        "advance": 14,
-        "captureRange": 1.0591338275698945
+        "buildShare": 0.7,
+        "roadShare": 0.07015100897988308,
+        "lineDemand": 1.460594845190644,
+        "advance": 5.08478574315086,
+        "captureRange": 0.8938975698547438,
+        "mergeWound": 0,
+        "splitHunger": 0.9936269326135516
       },
-      "fitness": 1.3632,
+      "fitness": 1.7585,
+      "wins": 3,
+      "games": 6
+    },
+    {
+      "params": {
+        "recruitTiles": 25.931785886641592,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.14358323754393493,
+        "buildShare": 0.7,
+        "roadShare": 0.10316150671569634,
+        "lineDemand": 1.460594845190644,
+        "advance": 5.08478574315086,
+        "captureRange": 0.9188983089989051,
+        "mergeWound": 0,
+        "splitHunger": 0.9936269326135516
+      },
+      "fitness": 1.7503,
+      "wins": 3,
+      "games": 6
+    },
+    {
+      "params": {
+        "recruitTiles": 36.325833200477064,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.14358323754393493,
+        "buildShare": 0.7,
+        "roadShare": 0.14085756624117496,
+        "lineDemand": 1.9956878390163184,
+        "advance": 6.4212732701562345,
+        "captureRange": 0.9188983089989051,
+        "mergeWound": 0,
+        "splitHunger": 1
+      },
+      "fitness": 1.7381,
+      "wins": 3,
+      "games": 6
+    },
+    {
+      "params": {
+        "recruitTiles": 29.680265919771045,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.14358323754393493,
+        "buildShare": 0.7,
+        "roadShare": 0.14085756624117496,
+        "lineDemand": 1.697200945392251,
+        "advance": 6.741651461692527,
+        "captureRange": 0.9188983089989051,
+        "mergeWound": 0,
+        "splitHunger": 0.9936269326135516
+      },
+      "fitness": 1.7297,
+      "wins": 3,
+      "games": 6
+    },
+    {
+      "params": {
+        "recruitTiles": 36.325833200477064,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.14994326761923726,
+        "buildShare": 0.7,
+        "roadShare": 0.14085756624117496,
+        "lineDemand": 2.003527310863137,
+        "advance": 5.08478574315086,
+        "captureRange": 0.9188983089989051,
+        "mergeWound": 0,
+        "splitHunger": 0.860505739110522
+      },
+      "fitness": 1.6924,
+      "wins": 3,
+      "games": 6
+    },
+    {
+      "params": {
+        "recruitTiles": 26.165815606247634,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.14358323754393493,
+        "buildShare": 0.7,
+        "roadShare": 0.14085756624117496,
+        "lineDemand": 2.003527310863137,
+        "advance": 8.93889041012153,
+        "captureRange": 0.9188983089989051,
+        "mergeWound": 0.05285173275042326,
+        "splitHunger": 0.9936269326135516
+      },
+      "fitness": 1.3811,
       "wins": 2,
       "games": 6
     },
     {
       "params": {
-        "recruitTiles": 28.618212014436722,
-        "infantryShare": 0.6494990700786002,
-        "armorShare": 0.30050092992139976,
-        "buildShare": 0.6031716996396426,
-        "roadShare": 0.14886147886281836,
-        "lineDemand": 1.0103768218308686,
-        "advance": 6.4212732701562345,
-        "captureRange": 1.2215305734425783
-      },
-      "fitness": 0.9461,
-      "wins": 1,
-      "games": 6
-    },
-    {
-      "params": {
-        "recruitTiles": 24.986945394892246,
-        "infantryShare": 0.6814586913725361,
-        "armorShare": 0.19639715022174642,
+        "recruitTiles": 36.325833200477064,
+        "infantryShare": 0.85,
+        "armorShare": 0.09999999999999998,
         "buildShare": 0.7,
-        "roadShare": 0.15000000000000002,
-        "lineDemand": 1.8746042475104332,
-        "advance": 7.824816624401137,
-        "captureRange": 1.1952345919562504
+        "roadShare": 0.14085756624117496,
+        "lineDemand": 1.697200945392251,
+        "advance": 5.08478574315086,
+        "captureRange": 1.0262237675487995,
+        "mergeWound": 0.18205070800613612,
+        "splitHunger": 0.9781407203990966
       },
-      "fitness": 0.9085,
+      "fitness": 1.3551,
+      "wins": 2,
+      "games": 6
+    },
+    {
+      "params": {
+        "recruitTiles": 30.130992584861815,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.11385395421064456,
+        "buildShare": 0.5869412397092673,
+        "roadShare": 0.14085756624117496,
+        "lineDemand": 2.6283288218080996,
+        "advance": 8.93889041012153,
+        "captureRange": 0.7375445008510724,
+        "mergeWound": 0,
+        "splitHunger": 0.9936269326135516
+      },
+      "fitness": 0.941,
       "wins": 1,
       "games": 6
     },
     {
       "params": {
-        "recruitTiles": 28.618212014436722,
-        "infantryShare": 0.7171763554261997,
-        "armorShare": 0.23282364457380023,
-        "buildShare": 0.6358215401764027,
-        "roadShare": 0.14886147886281836,
-        "lineDemand": 1.5317875586450098,
-        "advance": 6.4212732701562345,
-        "captureRange": 1.2247627661563456
+        "recruitTiles": 30.130992584861815,
+        "infantryShare": 0.8000567323807627,
+        "armorShare": 0.14994326761923726,
+        "buildShare": 0.5667128225788474,
+        "roadShare": 0.14085756624117496,
+        "lineDemand": 1.8001183953136204,
+        "advance": 5.08478574315086,
+        "captureRange": 0.9188983089989051,
+        "mergeWound": 0,
+        "splitHunger": 0.9593296844977885
       },
-      "fitness": 0.9046,
-      "wins": 1,
+      "fitness": 0.646,
+      "wins": 0,
       "games": 6
     }
   ],
-  "archiveSize": 60,
-  "elapsedMs": 1699965,
-  "postRosterAssessment": {
-    "date": "2026-10-03",
-    "layout": "roster-independent city layout",
-    "mode": "FFA",
-    "minutes": 10,
-    "gamesPerPair": 32,
-    "seeds": [11003, 11113, 11239, 11353, 11467, 11587, 11699, 11717, 11831, 11941, 12049, 12163, 12277, 12391, 12503, 12613],
-    "method": "Real createWorld/tick matches on small maps with factions 1 and 2; both seats per seed; unchanged deployed profiles and no resource handicaps.",
-    "fitness": "2 * win + land share + 0.5 * owned-city share",
-    "pairs": [
-      { "a": "hard", "b": "medium", "wins": 23, "losses": 9, "draws": 0, "meanMargin": 1.0782 },
-      { "a": "hard", "b": "easy", "wins": 30, "losses": 1, "draws": 1, "meanMargin": 2.1762 },
-      { "a": "medium", "b": "easy", "wins": 28, "losses": 3, "draws": 1, "meanMargin": 1.8321 }
-    ]
-  }
+  "archiveSize": 61,
+  "elapsedMs": 1851424
 }

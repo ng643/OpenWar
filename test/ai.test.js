@@ -8,7 +8,7 @@ import { findPath } from '../src/sim/pathfinding.js';
 import { tick } from '../src/sim/game.js';
 import { economy } from '../src/sim/economy.js';
 import { logisticsDistance } from '../src/sim/supply.js';
-import { aiThink, planAI, aiState, lineDemand, LINE_DEMAND, MAX_LINE_WIDTH, RANK_MAX, ROAD_MAX_NEW, aiCede, CEDE_MAX_TILES } from '../src/sim/ai.js';
+import { aiThink, planAI, aiState, aiMuster, lineDemand, LINE_DEMAND, MAX_LINE_WIDTH, RANK_MAX, ROAD_MAX_NEW, aiCede, CEDE_MAX_TILES } from '../src/sim/ai.js';
 import { getAIPolicy, normalizeAIPolicy, BASE_AI_POLICY } from '../src/sim/ai-policy.js';
 import { allied } from '../src/sim/teams.js';
 import { parseArgs, validateConfig, pickWeakest } from '../scripts/train-ai.js';
@@ -945,10 +945,10 @@ describe('AI roads', () => {
 });
 
 describe('AI difficulty policies', () => {
-  it('normalizes the eight knobs into their bounds and repairs the coupled sums', () => {
+  it('normalizes every knob into its bounds and repairs the coupled sums', () => {
     const p = normalizeAIPolicy({
       recruitTiles: 100, infantryShare: 0.99, armorShare: 0.9, buildShare: 0.9, roadShare: 0.9,
-      lineDemand: 99, advance: -5, captureRange: 9, sneaky: 1
+      lineDemand: 99, advance: -5, captureRange: 9, mergeWound: 5, splitHunger: -2, sneaky: 1
     });
     expect(p.recruitTiles).toBe(40);
     expect(p.infantryShare).toBe(0.85);
@@ -960,6 +960,8 @@ describe('AI difficulty policies', () => {
     expect(p.lineDemand).toBe(4);
     expect(p.advance).toBe(4);
     expect(p.captureRange).toBe(1.6);
+    expect(p.mergeWound).toBe(0.9);
+    expect(p.splitHunger).toBe(0);
     expect('sneaky' in p).toBe(false);                   // unknown fields are dropped, never carried through
     expect(Object.isFrozen(p)).toBe(true);
 
@@ -1151,6 +1153,85 @@ describe('AI policy decisions', () => {
     expect(lean).toBe(0);
   });
 });
+
+describe('AI muster', () => {
+  const musterPolicy = params => normalizeAIPolicy({ lineDemand: 4, ...params });
+  const withFullAndWounded = w => {
+    const at = frontGround(w, 1);
+    stage(w, 1, at.x, at.y, 100, 'inf');
+    stage(w, 1, at.x + 1, at.y, 30, 'inf');
+    return w.players[0];
+  };
+  it('is a no-op at the baseline: no policy means no split and no merge', () => {
+    const w = mkWorld(4451);
+    const p = withFullAndWounded(w);
+    const policy = p.aiPolicy;                       // BASE: mergeWound 0, splitHunger 1
+    const before = w.divs.filter(d => d.owner === 1).map(d => [d.id, d.men, d.cap]);
+    const out = aiMuster(w, p, w.divs.filter(d => d.owner === 1), policy);
+    expect(out.merged).toHaveLength(0);
+    expect(out.split).toHaveLength(0);
+    expect(w.divs.filter(d => d.owner === 1).map(d => [d.id, d.men, d.cap])).toEqual(before);
+  });
+
+  it('consolidates a wounded pair that fits, and never healthy bodies together', () => {
+    const w = mkWorld(4451);
+    const at = frontGround(w, 1);
+    const a = stage(w, 1, at.x, at.y, 60, 'inf');
+    const b = stage(w, 1, at.x + 1, at.y, 30, 'inf');
+    stage(w, 1, at.x, at.y + 5, 100, 'inf');
+    stage(w, 1, at.x + 1, at.y + 5, 100, 'inf');     // healthy neighbours: must stay two bodies
+    const p = w.players[0];
+    p.aiPolicy = musterPolicy({ mergeWound: 0.5 });
+    const out = aiMuster(w, p, w.divs.filter(d => d.owner === 1), p.aiPolicy);
+    expect(out.merged.map(d => d.id)).toEqual([b.id]);
+    expect([a.men, a.cap]).toEqual([90, 90]);
+    expect([b.men, b.merged]).toEqual([0, true]);
+    expect(out.split).toHaveLength(0);
+  });
+
+  it('splits a full idle body when the frontier is hungry, never under a heavier enemy', () => {
+    const w = mkWorld(4451);
+    const at = frontGround(w, 1);
+    const d = stage(w, 1, at.x, at.y, 100, 'inf');
+    const p = w.players[0];
+    p.aiPolicy = musterPolicy({ splitHunger: 0 });
+    expect(aiState(w, p).frontierShare).toBeGreaterThan(0);
+    const out = aiMuster(w, p, w.divs.filter(d => d.owner === 1), p.aiPolicy);
+    expect(out.split).toHaveLength(1);               // one full body divided
+    expect(out.split[0].men + d.men).toBe(100);
+
+    const w2 = mkWorld(4451);                        // same ground, but a heavier enemy in contact
+    const at2 = frontGround(w2, 1);
+    const d2 = stage(w2, 1, at2.x, at2.y, 100, 'inf');
+    stage(w2, 2, at2.x + 2, at2.y, 150, 'inf');
+    const p2 = w2.players[0];
+    p2.aiPolicy = musterPolicy({ splitHunger: 0 });
+    expect(aiMuster(w2, p2, w2.divs.filter(x => x.owner === 1), p2.aiPolicy).split).toHaveLength(0);
+    expect(d2.men).toBe(100);
+  });
+
+  it('leaves busy, engaged, routing and cornered bodies strictly alone', () => {
+    const w = mkWorld(4451);
+    const at = frontGround(w, 1);
+    const free = stage(w, 1, at.x, at.y, 30, 'inf');
+    const mate = stage(w, 1, at.x + 1, at.y, 30, 'inf');
+    const busy = stage(w, 1, at.x + 0.5, at.y + 1, 30, 'inf');
+    busy.path = [tileOf(w, busy) + 1];
+    const eng = stage(w, 1, at.x, at.y + 5, 30, 'inf');
+    eng.eng = true;
+    const flee = stage(w, 1, at.x + 1, at.y + 5, 30, 'inf');
+    flee.routing = true;
+    const cornered = stage(w, 1, at.x + 2, at.y + 5, 30, 'inf');
+    cornered.routLocked = true;
+    const p = w.players[0];
+    p.aiPolicy = musterPolicy({ mergeWound: 0.9 });
+    const out = aiMuster(w, p, w.divs.filter(d => d.owner === 1), p.aiPolicy);
+    expect(out.merged.map(d => d.id).sort((x, y) => x - y)).toEqual([mate.id]);
+    expect([free.men, mate.merged]).toEqual([60, true]);
+    for (const u of [busy, eng, flee, cornered]) expect([u.men, u.merged]).toEqual([30, undefined]);
+  });
+});
+
 
 describe('AI policy outcomes', () => {
   it('changes the game under different policies and repeats itself exactly under the same ones', () => {

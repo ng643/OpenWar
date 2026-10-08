@@ -1,4 +1,4 @@
-// Parametric AI policies. A policy is a bounded vector of eight real decision knobs (src/sim/ai.js
+// Parametric AI policies. A policy is a bounded vector of ten real decision knobs (src/sim/ai.js
 // reads them); it is NOT a neural model and grants no resources, information or other cheats. The
 // deployed difficulty profiles are produced by the offline natural-selection trainer
 // (scripts/train-ai.js) and shipped in ai-models.json - the trainer overwrites that file with the
@@ -8,7 +8,8 @@ import model from './ai-models.json' with { type: 'json' };
 /**
  * Every policy parameter, with the bounds the trainer mutates within and the baseline value - the
  * behaviour the AI had before policies existed. `medium` is the baseline, so games that never pick a
- * difficulty keep exactly the balance they had.
+ * difficulty keep exactly the balance they had; the two split/merge knobs baseline to never
+ * splitting or merging, which is that same pre-policy behaviour.
  */
 export const AI_POLICY_SPEC = Object.freeze({
   /** Owned tiles per division in the army soft cap (3 + floor(tiles / recruitTiles)). */
@@ -26,7 +27,17 @@ export const AI_POLICY_SPEC = Object.freeze({
   /** Tiles a line steps forward when it reaches its slots. */
   advance: Object.freeze({ lo: 4, hi: 14, base: 9 }),
   /** Capture search radius multiplier (1 at baseline). */
-  captureRange: Object.freeze({ lo: 0.6, hi: 1.6, base: 1 })
+  captureRange: Object.freeze({ lo: 0.6, hi: 1.6, base: 1 }),
+  /** Wounded line: a body whose men have fallen below this share of a full division of its type
+   *  (men / TYPES[type].men) consolidates with a fitting same-type neighbour within MERGE_RANGE.
+   *  0 = never consolidate (the pre-policy behaviour), 0.9 = almost every understrength body counts
+   *  as wounded. */
+  mergeWound: Object.freeze({ lo: 0, hi: 0.9, base: 0 }),
+  /** Frontier pressure - the share of the AI's own land standing on a capturable frontier, the
+   *  frontierShare aiState computes (frontier tiles / owned tiles, capped at 1) - above which a
+   *  full-strength, idle body splits for land. 0 = split wherever any frontier exists, 1 = never
+   *  split (the pre-policy behaviour). */
+  splitHunger: Object.freeze({ lo: 0, hi: 1, base: 1 })
 });
 
 /** Canonical parameter order, shared by the trainer's vectors and the artifact. */

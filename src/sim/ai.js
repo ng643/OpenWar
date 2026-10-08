@@ -1,10 +1,10 @@
 import {
   TYPES, WATER, BUILD_RADIUS, ART_RANGE, RANGE, FORT_RANGE,
-  ROUT_FRAC, LOGISTICS_DISTANCE, ROAD_GOLD
+  ROUT_FRAC, LOGISTICS_DISTANCE, ROAD_GOLD, MERGE_RANGE
 } from '../config.js';
 import { canBuild, placeBuildings, hasFactory, buildCost } from './buildings.js';
 import { findPath } from './pathfinding.js';
-import { raiseDivision, issueMove, issueFormation } from './divisions.js';
+import { raiseDivision, issueMove, issueFormation, splitDivs, mergeDivs } from './divisions.js';
 import { logisticsDistance } from './supply.js';
 import { roadTiles, placeRoads } from './roads.js';
 import { tileOf } from './geom.js';
@@ -51,11 +51,12 @@ const isFoe = (world, p, owner) => owner !== 0 && owner !== p.id && !allied(worl
  * territory is never capturable, so it is neither a capture destination nor a frontier of p's. */
 const capturable = (world, p, owner) => owner === 0 || (owner !== p.id && !allied(world, p.id, owner));
 
-/** One think-pass for an AI player: recruit, invest (buildings and roads), then give fresh orders to
- * the idle divisions. */
+/** One think-pass for an AI player: recruit, invest (buildings and roads), muster the idle army
+ * (consolidate the wounded, divide the full while the frontier is hungry), then give fresh orders
+ * to what is still idle. */
 export function aiThink(world, p) {
   const { rand, time } = world;
-  const mine = world.divs.filter(d => d.owner === p.id);
+  let mine = world.divs.filter(d => d.owner === p.id);
   const myCities = world.cities.filter(c => c.owner === p.id);
   const chest = p.pool >= TYPES.arm.manpower ? TYPES.arm.gold : TYPES.inf.gold;
   // The deployed policy is resolved once per think-pass and handed to every sub-policy; it is a
@@ -76,6 +77,17 @@ export function aiThink(world, p) {
   const reserve = Math.max(chest, held);
   const roadHold = aiRoads(world, p, myCities, roadBudget(world, p), reserve, policy);
   recruit(world, p, mine, myCities, reserve + roadHold, policy);
+
+  // Muster the idle army before it is planned: wounded detachments consolidate and full ones divide
+  // while the frontier is hungry, through the same splitDivs/mergeDivs a player's commands call, so
+  // nothing is granted beyond the sim's own rules. The plan below then resolves against the
+  // consolidated roster.
+  aiMuster(world, p, mine, policy);
+
+  // Absorbed donors linger in world.divs (zeroed, merged) until the next casualty sweep and halves
+  // are newborn, so the order pass rebuilds the roster from the live survivors; a fresh body still
+  // waits out its own think cooldown like any other.
+  mine = world.divs.filter(d => d.owner === p.id && !d.merged && d.men > 0);
 
   const byId = new Map(mine.map(d => [d.id, d]));
   for (const o of planAI(world, p).orders) {
@@ -208,6 +220,81 @@ function recruit(world, p, mine, myCities, reserve, policy = policyOf(world, p))
 }
 
 /**
+ * One muster pass of the idle army, run before the plan: wounded free detachments consolidate
+ * through mergeDivs, then full-strength ones divide through splitDivs while the frontier is hungry -
+ * the same two mutations a player's merge and split commands call, so men, capacity and capture
+ * credit move exactly as the sim allows and nothing is conjured.
+ *
+ * Only bodies aiThink counts as free take part: not merged, engaged, routing, rout-locked or busy
+ * with a path, route checkpoints or a displaced-ground anchor, and past their think cooldown. A
+ * wounded body below the routing threshold still consolidates - reinforcement is exactly what it
+ * needs, and mergeDivs only ever folds a body into a same-type neighbour. Every donor the pass
+ * leaves behind is zeroed by the sim: the plan skips it and the next casualty sweep removes it. A
+ * body that took part in a merge does not divide in the same think - it is a consolidation's
+ * product, not raw material for the splitter.
+ *
+ * Merge (policy.mergeWound, the wounded line): a body is wounded below mergeWound of a full
+ * division of its type. Every legitimate pair has at least one wounded side, and the heavier side
+ * of such a pair is always the healthy one, so each healthy body takes its own mergeDivs call with
+ * only nearby wounded partners - two healthy bodies can never consolidate - and the wounded
+ * leftovers consolidate among themselves. At 0 nothing is wounded and the sim is never called.
+ *
+ * Split (policy.splitHunger, the frontier pressure): when aiState's frontierShare - the share of
+ * the AI's own land standing on a capturable frontier - is above the knob, full-strength idle
+ * bodies divide in id order, so a long border with few troops gets more bodies to cover it.
+ * Artillery never divides (it cannot capture, so capture hunger does not apply to it), and a body
+ * with an equal or larger enemy mass within contact range does not divide either - a split in
+ * contact just feeds the enemy two weak halves. At 1 the knob can never be exceeded and the sim is
+ * never called, which is the pre-policy behaviour.
+ * @param {object[]} mine the player's divisions, as aiThink read them
+ * @returns {{merged:object[],split:object[]}} absorbed donors and newborn halves, for tests
+ */
+export function aiMuster(world, p, mine, policy = policyOf(world, p)) {
+  const free = mine.filter(d => d.owner === p.id && !d.merged && d.men > 0 &&
+    !d.eng && !d.routing && !d.routLocked &&
+    !d.path.length && !d.routePoints.length && d.anchor == null && world.time >= d.nextThink);
+  const out = { merged: [], split: [] };
+  if (!free.length) return out;
+
+  // Strength as the pass found it: only untouched bodies may divide below, so a merge product cannot
+  // immediately come apart again.
+  const preMen = new Map(free.map(d => [d.id, d.men]));
+
+  // --- merge: wounded detachments consolidate ----------------------------------------------------
+  const wound = policy.mergeWound;
+  if (wound > 0) {
+    const wounded = free.filter(d => d.men < wound * TYPES[d.type].men);
+    const healthy = free.filter(d => d.men >= wound * TYPES[d.type].men)
+      .sort((a, b) => b.men - a.men || a.id - b.id);
+    // One healthy body per call: inside a call at most one above-line body is present, so two
+    // healthy bodies can never absorb each other; each still takes every wounded neighbour it fits.
+    for (const h of healthy) {
+      const near = wounded.filter(w => w.type === h.type && !w.merged && w.men > 0 &&
+        Math.hypot(w.x - h.x, w.y - h.y) <= MERGE_RANGE);
+      if (near.length) out.merged.push(...mergeDivs([h, ...near]).absorbed);
+    }
+    const rest = wounded.filter(d => !d.merged && d.men > 0);
+    if (rest.length) out.merged.push(...mergeDivs(rest).absorbed);
+  }
+
+  // --- split: full-strength bodies divide while the frontier is hungry ----------------------------
+  // frontierShare is capped at 1, so a knob at (or above) 1 can never be exceeded: skip the scan.
+  if (policy.splitHunger < 1 && aiState(world, p).frontierShare > policy.splitHunger) {
+    const dividers = [];
+    for (const d of free) {
+      if (d.type === 'art') continue;                       // artillery cannot capture: hunger never applies
+      if (d.men < TYPES[d.type].men) continue;              // only a full division divides; halves fight as halves
+      if (d.merged || preMen.get(d.id) !== d.men) continue; // just mustered: no coming apart the same think
+      const foe = nearbyEnemy(world, p, d.x, d.y);
+      if (foe && foe.men >= d.men) continue;                // never divide under an equal or larger enemy mass
+      dividers.push(d);
+    }
+    out.split = splitDivs(world, dividers);
+  }
+  return out;
+}
+
+/**
  * Strategic snapshot of one AI player: how many divisions it has and how strong they are, how much
  * of the map it holds and how long its border is, who leads (the rival side with the most land),
  * how many rival players are left, and how much enemy manpower stands near its army. Pure world
@@ -296,6 +383,9 @@ export function planAI(world, p) {
 
   for (const d of world.divs) {
     if (d.owner !== p.id) continue;
+    // An absorbed donor lingers until the next casualty sweep; a muster inside this think can zero
+    // one, and an inert body must never be handed a fresh order.
+    if (d.merged || d.men <= 0) continue;
     // Fleeing and cornered are authoritative states shared with humans: the sim owns the flee path,
     // the locked fight-to-the-death decision and the saved intended order, so the AI never re-orders
     // a routing or routLocked division - it must keep fleeing or keep fighting until it is spent.

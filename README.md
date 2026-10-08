@@ -163,14 +163,21 @@ Single player uses the very same command path locally.
 ## AI training
 
 The difficulty profiles are **evolved decision parameters**, not neural networks or resource cheats.
-The trainer runs the real simulation, mutates and crosses eight bounded policy values, and keeps
-measured candidates. Medium stays at the original policy; Hard is the strongest validated evolved
-candidate. Easy comes from a separate bounded search that selects genuinely weaker measured policies.
+The trainer runs the real simulation, mutates and crosses every bounded policy value in
+`src/sim/ai-policy.js`, and keeps measured candidates. Medium stays at the original policy; Hard is
+the strongest validated evolved candidate. Easy comes from a separate bounded search that selects
+genuinely weaker measured policies. Two of the knobs govern the muster pass: `mergeWound` consolidates
+wounded idle detachments that fit one normal body, and `splitHunger` divides full-strength idle bodies
+while the frontier is hungry. Both call the same `mergeDivs`/`splitDivs` a player's commands call, so
+the AI never conjures men, capacity or capture credit, and it never touches engaged, routing,
+cornered or otherwise busy divisions.
 
 The shipped run used 12 candidates, six generations, and a ten-minute simulation limit per match.
 Training, Hard selection, Easy selection, and final assessment use disjoint seed sets. Every comparison
-plays both faction assignments to reduce map/seat bias. The original training assessment used 16 fresh
-seeds (32 games per pair), before the roster-independent city layout:
+plays both faction assignments to reduce map/seat bias. The latest run (8 October 2026 game build,
+seeds 5101…7207, 32 games per pair) assessed **Hard–Medium 22–10**, **Hard–Easy 32–0**, and
+**Medium–Easy 32–0**. The original training assessment used 16 fresh seeds (32 games per pair), before
+the roster-independent city layout:
 
 | Comparison | First wins | Second wins | No winner by the limit |
 |---|---:|---:|---:|
